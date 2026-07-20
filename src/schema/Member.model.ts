@@ -8,7 +8,7 @@ const memberSchema = new Schema(
   {
     memberType: {
       type: String,
-      enum: MemberType, // only allows: "USER" or "RESTAURANT"
+      enum: MemberType, // only allows: "USER" or "ADVISOR"
       default: MemberType.USER, // if not provided, defaults to USER
     },
 

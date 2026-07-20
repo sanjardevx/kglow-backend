@@ -1,7 +1,7 @@
 // MemberType — defines what kind of account a member has
 export enum MemberType {
   USER = "USER", // regular customer
-  RESTAURANT = "RESTAURANT", // restaurant owner (admin)
+  ADVISOR = "ADVISOR", // shop advisor (admin)
 }
 
 // MemberStatus — defines the current state of a member's account

@@ -1,0 +1,247 @@
+/* Project Standat 
+    - Logging standards
+    - Naming standards
+        function, method, variable => CAMELCASE      goHome
+        class => PASCAL                              MemberService
+        folder, file => KEBAB                              count-vowels
+        css => SNAKE                                 button_style 
+    - Error handling
+                
+*/
+
+/* Request:
+   Traditinal Api
+   Rest Api
+   GraphQL Api
+   ...
+*/
+
+/* Frontend Development:
+   Traditional FD  => SSR  => EJS
+   Modern FD       => SPA  => REACT
+*/
+
+/* Cookies:
+   request join
+   self destroy
+*/
+
+/* Validation:
+   Frontend validation
+   Backend validation
+   Database validation
+*/
+
+
+
+
+// K-TASK
+function countVowels(str: string): number {
+  let count = 0;
+  const vowels = "aeiouAEIOU";
+
+  for (let char of str) {
+    if (vowels.includes(char)) {
+      count++;
+    }
+  }
+
+  return count;
+}
+
+// console.log(countVowels("Uzbekistan"));
+// console.log(countVowels("SIMON"));
+
+
+
+
+
+// L-TASK
+const sentence = "we like coding";
+
+const reversedWords = sentence
+  .split(" ")
+  .map((word: string) => word.split("").reverse().join(""))
+  .join(" ");
+
+// console.log(reversedWords);
+
+
+
+// M-TASK
+function getSquareNumbers(arr: any[]) {
+  return arr.map((num) => {
+    return {
+      number: num,
+      square: num * num,
+    };
+  });
+}
+
+const input = [2, 5, 9];
+const result = getSquareNumbers(input);
+// console.log(result);
+
+
+
+// N-TASK
+function palindromCheck(str: string) {
+  const reversed = str.split("").reverse().join("");
+  return str === reversed;
+}
+
+// console.log(palindromCheck("racecar"));
+// console.log(palindromCheck("dad"));
+// console.log(palindromCheck("kiyik"));
+// console.log(palindromCheck("kiyii"));
+
+
+
+// O-TASK
+function calculateSumOfNumbers(
+  arr: (string | number | boolean | { son: number })[],
+) {
+  let sum = 0;
+
+  for (let item of arr) {
+    if (typeof item === "number") {
+      sum += item;
+    }
+  }
+
+  return sum;
+}
+
+// console.log(calculateSumOfNumbers([10, "10", { son: 10 }, true, 35]));
+
+
+
+// P-TASK
+function objectToArray(obj: Record<string, number>): [string, number][] {
+  return Object.entries(obj);
+}
+
+const natija = objectToArray({ a: 10, b: 20 });
+// console.log('natija:', natija)
+
+
+
+
+
+// Q-TASK
+function hasProperty(obj: object, key: string): boolean {
+  return key in obj;
+}
+
+// console.log(hasProperty({name: "Porsche", model: "Taycan"}, "model"));
+// console.log(hasProperty({name: "Porsche", model: "Taycan"}, "year"));
+
+
+
+// M-TASK
+function calculate(str: string): number {
+  return str
+    .split("+")
+    .reduce((sum: number, num: string) => sum + Number(num), 0);
+}
+
+// console.log(calculate("1+3"));
+// console.log(calculate("1+2+3"));
+
+
+
+// S-TASK
+function missingNumber(arr: number[]): number {
+  for (let i = 0; i <= arr.length; i++) {
+    if (!arr.includes(i)) {
+      return i;
+    }
+  }
+  return -1;
+}
+
+// console.log(missingNumber([0, 1, 2, 4, 3]));
+
+
+
+// T-TASK
+function mergeSortedArrays(arr1: number[], arr2: number[]): number[] {
+  return arr1.concat(arr2).sort((a, b) => a - b);
+}
+
+// console.log(mergeSortedArrays([0, 3, 4, 31], [4, 6, 30]));
+
+
+
+// U-TASK
+function sumOdds(num: number) {
+  let count = 0;
+
+  for (let i = 0; i < num; i++) {
+    if (i % 2 !== 0) {
+      count++;
+    }
+  }
+
+  return count;
+}
+
+// console.log(sumOdds(9));
+// console.log(sumOdds(11));
+
+
+
+
+// V-TASK
+function countChars(str: string) {
+  const result: { [key: string]: number } = {};
+
+  for (const char of str) {
+    if (result[char]) {
+      result[char]++;
+    } else {
+      result[char] = 1;
+    }
+  }
+
+  return result;
+}
+
+// console.log(countChars("UZBEKISTAN"));
+// console.log(countChars("apple"));
+
+
+
+
+//W-TASK
+function chunkArray(arr: number[], size: number): number[][] {
+  const result: number[][] = [];
+
+  for (let i = 0; i < arr.length; i += size) {
+    result.push(arr.slice(i, i + size));
+  }
+
+  return result;
+}
+
+// console.log(chunkArray([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], 3));
+
+
+
+// X-TASK
+function countOccurrences(obj: any, target: string): number {
+  let count = 0;
+
+  for (const key in obj) {
+    if (key === target) {
+      count++;
+    }
+
+    if (typeof obj[key] === "object" && obj[key] !== null) {
+      count += countOccurrences(obj[key], target);
+    }
+  }
+
+  return count;
+}
+console.log(countOccurrences({ model: "Bugatti", steer: { model: "HANKOOK", size: 30 } }, "model"));

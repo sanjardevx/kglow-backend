@@ -6,22 +6,22 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: linear-gradient(-45deg, #110303bf, #e37813, #011c1aba, #968383);
+  background: var(--bg);
 }
 
 .orders-container a {
   text-decoration: none;
-  color: #000000;
+  color: var(--ink);
 }
 
 .orders-container .nav-item a {
-  color: #e3c08d;
+  color: var(--ink-soft);
 }
 
 .orders-container .navigation-menu {
   position: relative;
   z-index: 10000;
-  color: #efefee;
+  color: var(--ink);
   font-size: 40px;
   font-family: monospace;
 }
@@ -62,11 +62,11 @@
   font-weight: 400;
   font-size: 30px;
   line-height: 25px;
-  color: #ffffff;
+  color: var(--ink);
 }
 
 .orders-container table {
-  background: white;
+  background: var(--surface);
 }
 
 .orders-container table td,
@@ -91,7 +91,7 @@ table th {
 }
 
 .orders-container .row-waiting {
-  background: #fff7e0;
+  background: var(--warn-soft);
 }
 
 .orders-container .status-pill {
@@ -103,16 +103,16 @@ table th {
 }
 
 .orders-container .status-waiting_confirmation {
-  background: #fbeeda;
-  color: #a9772f;
+  background: var(--warn-soft);
+  color: var(--warn);
 }
 
 .orders-container .status-confirmed {
-  background: #e2f5e9;
-  color: #16a34a;
+  background: var(--good-soft);
+  color: var(--good);
 }
 
 .orders-container .status-rejected {
-  background: #fbe4e1;
-  color: #c0392b;
+  background: var(--hard-soft);
+  color: var(--hard);
 }

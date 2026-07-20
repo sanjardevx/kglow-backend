@@ -5,3 +5,23 @@ body {
   height: 100%;
   width: 100%;
 }
+
+:root {
+  --ink: #1a2333;
+  --ink-soft: #5b6b7f;
+  --ink-faint: #94a2b0;
+  --bg: #f4f6f7;
+  --surface: #ffffff;
+  --surface-2: #edf1f2;
+  --line: #e2e7e9;
+  --line-strong: #cbd3d6;
+  --accent: #2b5fe0;
+  --accent-hover: #2049b8;
+  --accent-soft: #e6ecfc;
+  --good: #1e9e64;
+  --good-soft: #e1f5e9;
+  --warn: #c4882e;
+  --warn-soft: #fbeeda;
+  --hard: #c0392b;
+  --hard-soft: #fbe4e1;
+}

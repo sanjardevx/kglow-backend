@@ -7,27 +7,27 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: linear-gradient(-45deg, #110303bf, #e37813, #011c1aba, #968383);
+  background: var(--bg);
 }
 
 .users-container a {
   text-decoration: none;
-  color: #000000;
+  color: var(--ink);
 }
 
 .users-container .nav-item a {
-  color: #e3c08d;
+  color: var(--ink-soft);
 }
 
 .users-container .nav-item a.disabled {
-  color: #898071;
+  color: var(--ink-faint);
 }
 
 .users-container .navigation-menu {
   position: absolute;
   z-index: 10000;
   top: 1%;
-  color: #efefee;
+  color: var(--ink);
   font-size: 40px;
   font-family: monospace;
 }
@@ -79,7 +79,7 @@
   font-weight: 400;
   font-size: 30px;
   line-height: 25px;
-  color: #ffffff;
+  color: var(--ink);
 }
 
 .users-container select:focus {
@@ -92,15 +92,15 @@
   padding: 0px 7px;
   /*width: 100%;*/
   height: 27px;
-  background: #ffffff;
-  border: 1px solid #dddddd;
+  background: var(--surface);
+  border: 1px solid var(--line);
   border-radius: 8px;
   font-family: "GT Walsheim Pro";
   font-style: normal;
   font-weight: 400;
   font-size: 15px;
   line-height: 26px;
-  color: #4f547b;
+  color: var(--ink-soft);
 }
 
 .users-container table td,

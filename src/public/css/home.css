@@ -6,26 +6,26 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: linear-gradient(-45deg, #110303f0, #dd6d04, #011c1afc, #7a6868);
+  background: var(--bg);
 }
 
 .home-container a {
   text-decoration: none;
-  color: #000000;
+  color: var(--ink);
 }
 
 .home-container .nav-item a {
-  color: #e3c08d;
+  color: var(--ink-soft);
 }
 
 .home-container .nav-item a.disabled {
-  color: #898071;
+  color: var(--ink-faint);
 }
 
 .home-container .navigation-menu {
   position: relative;
   z-index: 10000;
-  color: #efefee;
+  color: var(--ink);
   font-size: 40px;
   font-family: monospace;
 }

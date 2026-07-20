@@ -55,6 +55,8 @@ orderController.updateOrder = async (req: ExtendenRequest, res: Response) => {
     if (err instanceof Errors) res.status(err.code).json(err);
     else res.status(Errors.standart.code).json(Errors.standart);
   }
+
+  
 };
 
 export default orderController;

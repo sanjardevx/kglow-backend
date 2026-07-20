@@ -123,8 +123,8 @@ class OrderService {
 
     if (!result) throw new Errors(HttpCode.NOT_MODIFIED, Message.UPDATE_FAILED);
 
-    // order status PAUSE => PROCESS(give point)
-    if (orderStatus === OrderStatus.PROCESS) {
+    // order status WAITING_CONFIRMATION => CONFIRMED (give point)
+    if (orderStatus === OrderStatus.CONFIRMED) {
       await this.memberService.addUserPoint(member, 1);
     }
     return result;

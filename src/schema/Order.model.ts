@@ -16,7 +16,19 @@ const orderSchema = new Schema(
     orderStatus: {
       type: String,
       enum: OrderStatus,
-      default: OrderStatus.PAUSE,
+      default: OrderStatus.WAITING_CONFIRMATION,
+    },
+
+    deliveryAddress: {
+      type: String,
+    },
+
+    paymentProof: {
+      type: String,
+    },
+
+    transferNote: {
+      type: String,
     },
 
     memberId: {

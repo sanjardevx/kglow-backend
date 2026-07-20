@@ -1,0 +1,98 @@
+<%- include('includes/header') %>
+
+<link rel="stylesheet" type="text/css" href="/css/order-confirmation.css" />
+
+<body>
+  <div class="orders-container">
+    <div class="navigation-menu">
+      <ul class="nav justify-content-center">
+        <li class="nav-item" style="cursor: pointer">
+          <a class="nav-link" href="/admin/">Home</a>
+        </li>
+        <li class="nav-item" style="cursor: pointer">
+          <a class="nav-link active" href="/admin/order/all">Order Confirmation</a>
+        </li>
+        <li class="nav-item" style="cursor: pointer">
+          <a class="nav-link" href="/admin/product/all">Products</a>
+        </li>
+        <li class="nav-item" style="cursor: pointer">
+          <a class="nav-link" href="/admin/user/all">Users</a>
+        </li>
+        <li class="nav-item" style="cursor: pointer" onclick="return confirm('Do you want to logout?')">
+          <a class="nav-link" href="/admin/logout">Logout</a>
+        </li>
+      </ul>
+    </div>
+
+    <div class="orders-frame">
+      <div class="board">
+        <div class="orders-table">
+          <span class="header-txt" style="margin-bottom: 30px">
+            ORDER CONFIRMATION
+          </span>
+          <table class="table table-bordered table-hover">
+            <thead class="thead-light">
+              <tr class="thead-light">
+                <th scope="col">#</th>
+                <th scope="col">Customer</th>
+                <th scope="col">Phone</th>
+                <th scope="col">Delivery Address</th>
+                <th scope="col">Items</th>
+                <th scope="col">Total</th>
+                <th scope="col">Payment Proof</th>
+                <th scope="col">Transfer Note</th>
+                <th scope="col">Status</th>
+                <th scope="col">Action</th>
+              </tr>
+            </thead>
+
+            <!--  LOOP ORDERS: START  -->
+            <% orders.map(function(value, key) { %>
+            <tr class="<%= value.orderStatus === 'WAITING_CONFIRMATION' ? 'row-waiting' : '' %>">
+              <td><%= key + 1 %></td>
+              <td><%= value.memberData[0] ? value.memberData[0].memberNick : '-' %></td>
+              <td><%= value.memberData[0] ? value.memberData[0].memberPhone : '-' %></td>
+              <td><%= value.deliveryAddress || '-' %></td>
+              <td>
+                <ul class="items-list">
+                  <% value.orderItems.map(function(item) { %>
+                  <% const product = value.productData.find(function(p) { return String(p._id) === String(item.productId); }); %>
+                  <li><%= product ? product.productName : 'Unknown' %> &times; <%= item.itemQuantity %></li>
+                  <% }) %>
+                </ul>
+              </td>
+              <td><%= value.orderTotal %></td>
+              <td>
+                <% if (value.paymentProof) { %>
+                <a href="/<%= value.paymentProof %>" target="_blank">
+                  <img src="/<%= value.paymentProof %>" class="payment-thumb" />
+                </a>
+                <% } else { %>
+                -
+                <% } %>
+              </td>
+              <td><%= value.transferNote || '-' %></td>
+              <td>
+                <span class="status-pill status-<%= value.orderStatus.toLowerCase() %>">
+                  <%= value.orderStatus %>
+                </span>
+              </td>
+              <td>
+                <% if (value.orderStatus === 'WAITING_CONFIRMATION') { %>
+                <button class="btn btn-success btn-sm confirm-btn" id="confirm-<%= value._id %>">Confirm</button>
+                <button class="btn btn-danger btn-sm reject-btn" id="reject-<%= value._id %>">Reject</button>
+                <% } %>
+              </td>
+            </tr>
+            <% }) %>
+            <!--  LOOP ORDERS: END  -->
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="text/javascript" src="/js/order-confirmation.js"></script>
+</body>
+
+<%- include('includes/footer') %>

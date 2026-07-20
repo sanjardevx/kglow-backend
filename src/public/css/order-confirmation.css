@@ -1,0 +1,118 @@
+.orders-container {
+  position: relative;
+  width: auto;
+  height: auto;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: linear-gradient(-45deg, #110303bf, #e37813, #011c1aba, #968383);
+}
+
+.orders-container a {
+  text-decoration: none;
+  color: #000000;
+}
+
+.orders-container .nav-item a {
+  color: #e3c08d;
+}
+
+.orders-container .navigation-menu {
+  position: relative;
+  z-index: 10000;
+  color: #efefee;
+  font-size: 40px;
+  font-family: monospace;
+}
+
+.orders-container .orders-frame {
+  position: relative;
+  padding-bottom: 80px;
+  width: 100%;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.orders-container .board {
+  position: relative;
+  margin-top: 100px;
+  width: 1320px;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.orders-container .orders-table {
+  position: relative;
+  width: 100%;
+  height: auto;
+  margin-top: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.orders-container .header-txt {
+  font-family: "Source Serif Pro";
+  font-style: normal;
+  font-weight: 400;
+  font-size: 30px;
+  line-height: 25px;
+  color: #ffffff;
+}
+
+.orders-container table {
+  background: white;
+}
+
+.orders-container table td,
+table th {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.orders-container .items-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 13px;
+  text-align: left;
+}
+
+.orders-container .payment-thumb {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 5px;
+}
+
+.orders-container .row-waiting {
+  background: #fff7e0;
+}
+
+.orders-container .status-pill {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.orders-container .status-waiting_confirmation {
+  background: #fbeeda;
+  color: #a9772f;
+}
+
+.orders-container .status-confirmed {
+  background: #e2f5e9;
+  color: #16a34a;
+}
+
+.orders-container .status-rejected {
+  background: #fbe4e1;
+  color: #c0392b;
+}

@@ -27,7 +27,6 @@ const memberSchema = new Schema(
     memberPhone: {
       type: String,
       index: { unique: true, sparse: true }, // no two members can have the same phone
-      required: true,
     },
 
     memberPassword: {

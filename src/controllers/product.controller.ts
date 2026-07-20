@@ -1,4 +1,4 @@
-import { ProductCollection } from "./../libs/enums/product.enum";
+import { ProductCategory } from "./../libs/enums/product.enum";
 import { Request, Response } from "express";
 import Errors, { HttpCode, Message } from "../libs/Errors";
 import { T } from "../libs/types/common";
@@ -14,14 +14,14 @@ const productController: T = {};
 productController.getProducts = async (req: Request, res: Response) => {
   try {
     console.log("getProducts");
-    const { page, limit, order, productCollection, search } = req.query;
+    const { page, limit, order, productCategory, search } = req.query;
     const inquiry: ProductInquiry = {
       order: String(order),
       page: Number(page),
       limit: Number(limit),
     };
-    if (productCollection) {
-      inquiry.productCollection = productCollection as ProductCollection;
+    if (productCategory) {
+      inquiry.productCategory = productCategory as ProductCategory;
     }
     if (search) inquiry.search = String(search);
 

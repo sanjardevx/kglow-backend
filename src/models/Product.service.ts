@@ -27,8 +27,8 @@ class ProductService {
   public async getProducts(inquiry: ProductInquiry): Promise<Product[]> {
     const match: T = { productStatus: ProductStatus.PROCESS };
 
-    if (inquiry.productCollection)
-      match.productCollection = inquiry.productCollection;
+    if (inquiry.productCategory)
+      match.productCategory = inquiry.productCategory;
     if (inquiry.search) {
       match.productName = { $regex: new RegExp(inquiry.search, "i") };
     }
@@ -89,7 +89,7 @@ class ProductService {
           .exec();
       }
     }
-    
+
     return result;
   }
 

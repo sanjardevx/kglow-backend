@@ -1,17 +1,6 @@
 console.log("Products frontend javascript file");
 
 $(function () {
-  $(".product-collection").on("change", () => {
-    const selectedValue = $(".product-collection").val();
-    if (selectedValue === "DRINK") {
-      $("#product-collection").hide();
-      $("#product-volume").show();
-    } else {
-      $("#product-volume").hide();
-      $("#product-collection").show();
-    }
-  });
-
   $("#process-btn").on("click", () => {
     $(".dish-container").slideToggle(500);
     $("#process-btn").css("display", "none");
@@ -44,17 +33,21 @@ $(function () {
 
 function validateForm() {
   const productName = $(".product-name").val(),
+   productBrand = $(".product-brand").val(),
    productPrice = $(".product-price").val(),
    productLeftCount = $(".product-left-count").val(),
-   productCollection = $(".product-collection").val(),
+   productCategory = $(".product-category").val(),
+   productVolume = $(".product-volume").val(),
    productDesc = $(".product-desc").val(),
    productStatus = $(".product-status").val();
 
   if (
     productName === "" ||
+    productBrand === "" ||
     productPrice === "" ||
     productLeftCount === "" ||
-    productCollection === "" ||
+    productCategory === "" ||
+    productVolume === "" ||
     productDesc === "" ||
     productStatus === ""
   ) {

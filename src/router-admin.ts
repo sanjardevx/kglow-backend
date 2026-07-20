@@ -9,6 +9,7 @@ import express from "express";
 const routerAdmin = express.Router(); // creates a mini-router just for admin pages
 import restaurantController from "./controllers/restaurant.controller";
 import productController from "./controllers/product.controller";
+import orderController from "./controllers/order.controller";
 import makeUploader from "./libs/utils/uploader";
 
 /** Restaurant **/
@@ -44,6 +45,19 @@ routerAdmin.post(
   "/product/:id",
   restaurantController.verifyRestaurant,
   productController.updateChosenProduct,
+);
+
+/** Order routes **/
+routerAdmin.get(
+  "/order/all",
+  restaurantController.verifyRestaurant,
+  orderController.getAllOrders,
+);
+
+routerAdmin.post(
+  "/order/update",
+  restaurantController.verifyRestaurant,
+  orderController.updateOrderStatus,
 );
 
 /** User  **/

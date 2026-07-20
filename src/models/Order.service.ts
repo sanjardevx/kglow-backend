@@ -129,6 +129,52 @@ class OrderService {
     }
     return result;
   }
+
+  public async getAllOrders(): Promise<Order[]> {
+    const result = await this.orderModel
+      .aggregate([
+        { $sort: { createdAt: -1 } },
+        {
+          $lookup: {
+            from: "orderItems",
+            localField: "_id",
+            foreignField: "orderId",
+            as: "orderItems",
+          },
+        },
+        {
+          $lookup: {
+            from: "products",
+            localField: "orderItems.productId",
+            foreignField: "_id",
+            as: "productData",
+          },
+        },
+        {
+          $lookup: {
+            from: "members",
+            localField: "memberId",
+            foreignField: "_id",
+            as: "memberData",
+          },
+        },
+      ])
+      .exec();
+    if (!result) throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
+    return result;
+  }
+
+  public async updateOrderStatus(
+    orderId: string,
+    orderStatus: OrderStatus,
+  ): Promise<Order> {
+    const id = shapeIntoMongooseObjectId(orderId);
+    const result = await this.orderModel
+      .findByIdAndUpdate(id, { orderStatus: orderStatus }, { new: true })
+      .exec();
+    if (!result) throw new Errors(HttpCode.NOT_MODIFIED, Message.UPDATE_FAILED);
+    return result;
+  }
 }
 
 export default OrderService;

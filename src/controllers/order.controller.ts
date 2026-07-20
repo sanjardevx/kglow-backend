@@ -1,7 +1,7 @@
 import Errors, { HttpCode } from "../libs/Errors";
 import { T } from "../libs/types/common";
 import { ExtendenRequest } from "../libs/types/member";
-import { Response } from "express";
+import { Request, Response } from "express";
 import OrderService from "../models/Order.service";
 import { OrderInquiry, OrderUpdateInput } from "../libs/types/order";
 import { OrderStatus } from "../libs/enums/order.enum";
@@ -55,8 +55,32 @@ orderController.updateOrder = async (req: ExtendenRequest, res: Response) => {
     if (err instanceof Errors) res.status(err.code).json(err);
     else res.status(Errors.standart.code).json(Errors.standart);
   }
+};
 
-  
+/** SSR */
+orderController.getAllOrders = async (req: Request, res: Response) => {
+  try {
+    console.log("getAllOrders");
+    const data = await orderService.getAllOrders();
+    res.render("order-confirmation", { orders: data });
+  } catch (err) {
+    console.log("Error on getAllOrders", err);
+    if (err instanceof Errors) res.status(err.code).json(err);
+    else res.status(Errors.standart.code).json(Errors.standart);
+  }
+};
+
+orderController.updateOrderStatus = async (req: Request, res: Response) => {
+  try {
+    console.log("updateOrderStatus");
+    const { orderId, orderStatus } = req.body;
+    const result = await orderService.updateOrderStatus(orderId, orderStatus);
+    res.status(HttpCode.OK).json({ data: result });
+  } catch (err) {
+    console.log("Error on updateOrderStatus", err);
+    if (err instanceof Errors) res.status(err.code).json(err);
+    else res.status(Errors.standart.code).json(Errors.standart);
+  }
 };
 
 export default orderController;

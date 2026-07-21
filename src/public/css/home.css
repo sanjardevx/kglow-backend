@@ -35,13 +35,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: 55px;
 }
 
 .home-container .animation-wrapper {
   position: relative;
   width: 775px;
-  height: 775px;
+  height: 600px;
   display: flex;
   align-items: center;
   justify-content: center;

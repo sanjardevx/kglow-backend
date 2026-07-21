@@ -5,83 +5,53 @@
 <body>
   <div class="users-container">
     <% if(!member) { %>
-    <div class="navigation-menu">
-      <ul class="nav justify-content-center">
-        <li class="nav-item" style="cursor: pointer">
-          <a class="nav-link active" href="/admin/">Home</a>
-        </li>
-        <li class="nav-item" style="cursor: pointer">
-          <a class="nav-link" href="/admin/signup">SignUp</a>
-        </li>
-        <li class="nav-item" style="cursor: pointer">
-          <a class="nav-link" href="/admin/login">Login</a>
-        </li>
-      </ul>
-    </div>
-
-    <div class="users-frame" style="color: #dddddd">
-      <div class="board" style="font-size: 40px">Please login first!</div>
+    <%- include('includes/nav', { active: 'users' }) %>
+    <div class="body-pad">
+      <div class="users-frame" style="color: #dddddd">
+        <div class="board" style="font-size: 40px">Please login first!</div>
+      </div>
     </div>
 
     <% } else { %>
-    <div class="navigation-menu">
-      <ul class="nav justify-content-center">
-        <li class="nav-item" style="cursor: pointer">
-          <a class="nav-link" href="/admin/">Home</a>
-        </li>
-        <li class="nav-item" style="cursor: pointer">
-          <a class="nav-link" href="/admin/order/all">Order Confirmation</a>
-        </li>
-        <li class="nav-item" style="cursor: pointer">
-          <a class="nav-link" href="/admin/product/all">Products</a>
-        </li>
-        <li class="nav-item" style="cursor: pointer">
-          <a class="nav-link active" href="/admin/user/all">Users</a>
-        </li>
-        <li
-          class="nav-item"
-          style="cursor: pointer"
-          onclick="return confirm('Do you really want to logout?')"
-        >
-          <a class="nav-link" href="/admin/logout">Logout</a>
-        </li>
-      </ul>
-    </div>
-
-    <div class="users-frame">
-      <div class="board">
-        <div class="user-table">
-          <span class="header-name" style="margin-bottom: 30px"
-            >All Users List</span
-          >
-          <table class="table table-hover table-sm">
-            <thead class="thead-light">
-              <tr class="thead-light">
-                <th scope="col">No</th>
-                <th scope="col">Name</th>
-                <th scope="col">Phone</th>
-                <th scope="col">Status</th>
-              </tr>
-            </thead>
-
-            <!--  LOOP PRODUCTS: START  -->
-            <% users.map(function(value, index) { %>
-            <tbody style="background: white">
-              <td><%= index+1 %></td>
-              <td><%= value.memberNick %></td>
-              <td><%= value.memberPhone %></td>
-              <td style="width: 13%">
-                <select class="spec-select member-status" id="<%= value._id %>">
-                  <option value="ACTIVE" <%= value.memberStatus === 'ACTIVE' ? 'selected': '' %> >ACTIVE</option>
-                  <option value="BLOCK" <%= value.memberStatus === 'BLOCK' ? 'selected': '' %> >BLOCK</option>
-                  <option value="DELETE" <%= value.memberStatus === 'DELETE' ? 'selected': '' %> >DELETE</option>
-                </select>
-              </td>
-            </tbody>
-            <% }) %>
-            <!--  LOOP PRODUCTS: END  -->
-              
-          </table>
+    <%- include('includes/nav', { active: 'users' }) %>
+    <div class="body-pad">
+      <div class="users-frame">
+        <div class="board">
+          <div class="user-table">
+            <div class="section-head">
+              <div class="section-title">Users</div>
+            </div>
+            <div class="table-scroll">
+              <table class="table-data">
+                <thead>
+                  <tr>
+                    <th style="width: 8%">#</th>
+                    <th style="width: 40%">Name</th>
+                    <th style="width: 32%">Phone</th>
+                    <th style="width: 20%">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!--  LOOP USERS: START  -->
+                  <% users.map(function(value, index) { %>
+                  <tr>
+                    <td class="cell-soft"><%= index+1 %></td>
+                    <td class="cell-strong"><%= value.memberNick %></td>
+                    <td class="cell-soft"><%= value.memberPhone %></td>
+                    <td>
+                      <select class="status-select status-<%= value.memberStatus.toLowerCase() %> member-status" id="<%= value._id %>">
+                        <option value="ACTIVE" <%= value.memberStatus === 'ACTIVE' ? 'selected': '' %>>Active</option>
+                        <option value="BLOCK" <%= value.memberStatus === 'BLOCK' ? 'selected': '' %>>Block</option>
+                        <option value="DELETE" <%= value.memberStatus === 'DELETE' ? 'selected': '' %>>Delete</option>
+                      </select>
+                    </td>
+                  </tr>
+                  <% }) %>
+                  <!--  LOOP USERS: END  -->
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -1,27 +1,27 @@
 console.log("Users frontend javascript file");
 
-$(function () {
-  $(".member-status").on("change", function (e) {
-    const id = e.target.id,
-     memberStatus = $(`#${id}.member-status`).val();
+$(".member-status").on("change", function (e) {
+  const id = e.target.id,
+    memberStatus = $(`#${id}.member-status`).val();
 
-    // TODO: Axios UpdateChosemUser
-    axios
-      .post("/admin/user/edit", {
-        _id: id,
-        memberStatus: memberStatus,
-      })
-      .then((response) => {
-        console.log("response:", response);
-        const result = response.data;
+  axios
+    .post("/admin/user/edit", {
+      _id: id,
+      memberStatus: memberStatus,
+    })
+    .then((response) => {
+      console.log("response:", response);
+      const result = response.data;
 
-        if (result.data) {
-          $(".member-status").blur();
-        } else alert("User update failed!");
-      })
-      .catch((err) => {
-        console.log(err);
-        alert("User update failed!");
-      });
-  });
+      if (result.data) {
+        $(`#${id}.member-status`)
+          .removeClass("status-active status-block status-delete")
+          .addClass(`status-${memberStatus.toLowerCase()}`)
+          .blur();
+      } else alert("User update failed!");
+    })
+    .catch((err) => {
+      console.log(err);
+      alert("User update failed!");
+    });
 });

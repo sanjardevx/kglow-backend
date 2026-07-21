@@ -14,23 +14,6 @@
   color: var(--ink);
 }
 
-.products-container .nav-item a {
-  color: var(--ink-soft);
-}
-
-.products-container .nav-item a.disabled {
-  color: var(--ink-faint);
-}
-
-.products-container .navigation-menu {
-  position: absolute;
-  z-index: 10000;
-  top: 1%;
-  color: var(--ink);
-  font-size: 40px;
-  font-family: monospace;
-}
-
 .products-container .restaurant-menu-frame {
   position: relative;
   padding-bottom: 80px;
@@ -44,7 +27,6 @@
 
 .products-container .restaurant-menu-frame .board {
   position: relative;
-  margin-top: 100px;
   width: 1320px;
   height: auto;
   display: flex;
@@ -74,11 +56,11 @@
 }
 
 .products-container .new-dish-txt {
-  font-family: "Source Serif Pro";
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-style: normal;
-  font-weight: 400;
-  font-size: 30px;
-  line-height: 25px;
+  font-weight: 800;
+  font-size: 26px;
+  line-height: 1.3;
   color: var(--ink);
 }
 
@@ -92,7 +74,7 @@
 }
 
 .products-container .long-input label {
-  font-family: "Source Serif Pro";
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-style: normal;
   font-weight: 400;
   font-size: 16px;
@@ -109,7 +91,7 @@
   border: 1px solid var(--line-strong);
   background: var(--surface-2);
   border-radius: 5px;
-  font-family: "GT Walsheim Pro";
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-style: normal;
   font-weight: 400;
   font-size: 15px;
@@ -126,7 +108,7 @@
   border: 1px solid var(--line-strong);
   background: var(--surface-2);
   border-radius: 5px;
-  font-family: "GT Walsheim Pro";
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-style: normal;
   font-weight: 400;
   font-size: 15px;
@@ -144,7 +126,7 @@
   border: 1px solid var(--line-strong);
   background: var(--surface-2);
   border-radius: 5px;
-  font-family: "GT Walsheim Pro";
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-style: normal;
   font-weight: 400;
   font-size: 15px;
@@ -167,7 +149,7 @@
   border: 1px solid var(--line-strong);
   background: var(--surface-2);
   border-radius: 5px;
-  font-family: "GT Walsheim Pro";
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-style: normal;
   font-weight: 400;
   font-size: 15px;
@@ -194,7 +176,7 @@
 }
 
 .products-container .half-input label {
-  font-family: "Source Serif Pro";
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-style: normal;
   font-weight: 400;
   font-size: 16px;
@@ -251,7 +233,7 @@
 
 .products-container .img-frame label {
   margin-top: 30px;
-  font-family: "Source Serif Pro";
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-style: normal;
   font-weight: 400;
   font-size: 16px;
@@ -259,7 +241,7 @@
   color: var(--ink);
 }
 
-.products-container #file {
+.products-container .upload-img-box input[type="file"] {
   opacity: 0;
   border: none;
   border-radius: 10px;
@@ -280,82 +262,3 @@
   align-items: center;
 }
 
-.products-container .spec-select {
-  position: relative;
-  padding: 0px 7px;
-  height: 27px;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  font-family: "GT Walsheim Pro";
-  font-style: normal;
-  font-weight: 400;
-  font-size: 15px;
-  line-height: 26px;
-  color: var(--ink-soft);
-}
-
-.products-container table td,
-table th {
-  text-align: center;
-  vertical-align: middle;
-}
-
-.products-container .switch {
-  position: relative;
-  display: inline-block;
-  width: 50px;
-  height: 20px;
-}
-
-.products-container .switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.products-container .slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: var(--line-strong);
-  -webkit-transition: 0.4s;
-  transition: 0.4s;
-}
-
-.products-container .slider:before {
-  position: absolute;
-  content: "";
-  height: 14px;
-  width: 14px;
-  left: 6px;
-  bottom: 3.5px;
-  background-color: white;
-  -webkit-transition: 0.4s;
-  transition: 0.4s;
-}
-
-.products-container input:checked + .slider {
-  background-color: var(--accent);
-}
-
-.products-container input:focus + .slider {
-  box-shadow: 0 0 1px var(--accent);
-}
-
-.products-container input:checked + .slider:before {
-  -webkit-transform: translateX(26px);
-  -ms-transform: translateX(26px);
-  transform: translateX(26px);
-}
-
-.products-container .slider.round {
-  border-radius: 34px;
-}
-
-.products-container .slider.round:before {
-  border-radius: 50%;
-}

@@ -4,224 +4,193 @@
 
 <body>
   <div class="products-container">
-    <div class="navigation-menu">
-      <ul class="nav justify-content-center">
-        <li class="nav-item" style="cursor: pointer">
-          <a class="nav-link" href="/admin/">Home</a>
-        </li>
-        <li class="nav-item" style="cursor: pointer">
-          <a class="nav-link" href="/admin/order/all">Order Confirmation</a>
-        </li>
-        <li class="nav-item" style="cursor: pointer">
-          <a class="nav-link active" href="/admin/product/all">Products</a>
-        </li>
-        <li class="nav-item" style="cursor: pointer">
-          <a class="nav-link" href="/admin/user/all">Users</a>
-        </li>
-        <li
-          class="nav-item"
-          style="cursor: pointer"
-          onclick="return confirm('Do you want to logout?')"
-        >
-          <a class="nav-link" href="/admin/logout">Logout</a>
-        </li>
-      </ul>
-    </div>
-
-    <div class="restaurant-menu-frame">
-      <div class="board">
-        <div class="dishes-table">
-          <span class="new-dish-txt" style="margin-bottom: 30px">
-            RESTAURANT MENU
-          </span>
-          <table class="table table-bordered table-hover">
-            <thead class="thead-light">
-              <tr class="thead-light">
-                <th scope="col">T/r</th>
-                <th scope="col">Product Name</th>
-                <th scope="col">Brand</th>
-                <th scope="col">Category</th>
-                <th scope="col">Volume</th>
-                <th scope="col">Product Price</th>
-                <th scope="col">Product Left Count</th>
-                <th scope="col">Status</th>
-              </tr>
-            </thead>
-            <!--  LOOP PRODUCTS: START  -->
-
-            <% products.map(function(value, key) { %>
-            <tbody style="background: white">
-              <td><%= key + 1 %></td>
-              <td><%= value.productName %></td>
-              <td><%= value.productBrand %></td>
-              <td><%= value.productCategory %></td>
-              <td><%= value.productVolume %></td>
-              <td><%= value.productPrice %></td>
-              <td><%= value.productLeftCount %></td>
-              <td>
-                <select
-                  class="spec-select new-product-status"
-                  id="<%= value._id %>"
-                >
-                  <option value="PAUSE"
-                    <%= value.productStatus === 'PAUSE' ? 'selected' : '' %> > PAUSE</option>
-                  <option value="PROCESS"
-                    <%= value.productStatus === 'PROCESS' ? 'selected' : '' %> >PROCESS</option>
-                  <option value="DELETE"   
-                    <%= value.productStatus === 'DELETE' ? 'selected' : '' %> >DELETE</option>
-                </select>
-              </td>
-            </tbody>
-            <% }) %>
+    <%- include('includes/nav', { active: 'products' }) %>
+    <div class="body-pad">
+      <div class="restaurant-menu-frame">
+        <div class="board">
+          <div class="dishes-table">
+            <div class="section-head">
+              <div class="section-title">Products</div>
+              <button class="btn-console" id="process-btn" type="button">+ New Product</button>
+            </div>
+            <div class="table-scroll">
+            <table class="table-data">
+              <thead>
+                <tr>
+                  <th style="width: 5%">#</th>
+                  <th style="width: 28%">Name</th>
+                  <th style="width: 15%">Brand</th>
+                  <th style="width: 13%">Category</th>
+                  <th style="width: 10%">Volume</th>
+                  <th style="width: 12%">Price</th>
+                  <th style="width: 8%">Left</th>
+                  <th style="width: 9%">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!--  LOOP PRODUCTS: START  -->
+                <% products.map(function(value, key) { %>
+                <tr>
+                  <td><%= key + 1 %></td>
+                  <td class="cell-strong"><%= value.productName %></td>
+                  <td class="cell-soft"><%= value.productBrand %></td>
+                  <td class="cell-soft"><%= value.productCategory %></td>
+                  <td class="cell-soft"><%= /^[\d.]+$/.test(value.productVolume) ? value.productVolume + ' ml' : value.productVolume %></td>
+                  <td class="cell-strong"><%= value.productPrice.toLocaleString('en-US') %></td>
+                  <td class="cell-soft"><%= value.productLeftCount %></td>
+                  <td>
+                    <select
+                      class="status-select status-<%= value.productStatus.toLowerCase() %> new-product-status"
+                      id="<%= value._id %>"
+                    >
+                      <option value="PAUSE"
+                        <%= value.productStatus === 'PAUSE' ? 'selected' : '' %> >Pause</option>
+                      <option value="PROCESS"
+                        <%= value.productStatus === 'PROCESS' ? 'selected' : '' %> >Process</option>
+                      <option value="DELETE"
+                        <%= value.productStatus === 'DELETE' ? 'selected' : '' %> >Delete</option>
+                    </select>
+                  </td>
+                </tr>
+                <% }) %>
+                <!--  LOOP PRODUCTS: END  -->
+              </tbody>
             </table>
-
-            <!--  LOOP PRODUCTS: END  -->
-          <div
-            class="long-input"
-            style="align-items: flex-end; margin-bottom: 25px"
+            </div>
+          </div>
+          <form
+            onsubmit="return validateForm()"
+            action="/admin/product/create"
+            method="POST"
+            class="dish-container"
+            enctype="multipart/form-data"
           >
-            <button class="btn btn-primary" id="process-btn">
-              New Product
-            </button>
-          </div>
-        </div>
-        <form
-          onsubmit="return validateForm()"
-          action="/admin/product/create"
-          method="POST"
-          class="dish-container"
-          enctype="multipart/form-data"
-        >
-          <div class="long-input" style="display: flex; align-items: center">
-            <span class="new-dish-txt">NEW PRODUCT DETAIL</span>
-          </div>
-          <div class="login-input-frame">
+            <div class="long-input" style="display: flex; align-items: center">
+              <span class="new-dish-txt">NEW PRODUCT DETAIL</span>
+            </div>
+            <div class="login-input-frame">
+              <div class="long-input">
+                <label>Product Name</label>
+                <input
+                  type="text"
+                  placeholder="Name"
+                  name="productName"
+                  class="product-name"
+                />
+              </div>
+              <input
+                name="productStatus"
+                value="PAUSE"
+                class="product-status"
+                hidden
+              />
+            </div>
+            <div class="half-input-frame">
+              <div class="half-input">
+                <label>Product Price</label>
+                <input
+                  type="number"
+                  placeholder="Price"
+                  name="productPrice"
+                  class="product-price"
+                />
+              </div>
+              <div class="half-input">
+                <label>Product Left Counts</label>
+                <input
+                  type="number"
+                  placeholder="Counts"
+                  name="productLeftCount"
+                  class="product-left-count"
+                />
+              </div>
+            </div>
+
+            <div class="half-input-frame">
+              <div class="half-input">
+                <label>Product Brand</label>
+                <input type="text" placeholder="e.g. COSRX" name="productBrand" class="product-brand" />
+              </div>
+              <div class="half-input">
+                <label>Product Category</label>
+                <select class="product-category" name="productCategory">
+                  <option value="SKINCARE" selected>Skincare</option>
+                  <option value="MAKEUP">Makeup</option>
+                  <option value="SETS">Sets</option>
+                </select>
+              </div>
+            </div>
+
             <div class="long-input">
-              <label>Product Name</label>
-              <input
-                type="text"
-                placeholder="Name"
-                name="productName"
-                class="product-name"
-              />
+              <label>Product Volume</label>
+              <input type="text" placeholder="e.g. 50ml" name="productVolume" class="product-volume" />
             </div>
-            <input
-              name="productStatus"
-              value="PAUSE"
-              class="product-status"
-              hidden
-            />
-          </div>
-          <div class="half-input-frame">
-            <div class="half-input">
-              <label>Product Price</label>
-              <input
-                type="number"
-                placeholder="Price"
-                name="productPrice"
-                class="product-price"
-              />
+            <div class="long-input">
+              <label>Product Description</label>
+              <textarea name="productDesc" class="product-desc"></textarea>
             </div>
-            <div class="half-input">
-              <label>Product Left Counts</label>
-              <input
-                type="number"
-                placeholder="Counts"
-                name="productLeftCount"
-                class="product-left-count"
-              />
-            </div>
-          </div>
 
-          <div class="half-input-frame">
-            <div class="half-input">
-              <label>Product Brand</label>
-              <input type="text" placeholder="e.g. COSRX" name="productBrand" class="product-brand" />
+            <div class="img-frame">
+              <label>Product Images</label>
+              <div class="media-frame">
+                <div class="upload-img-box">
+                  <img src="/img/upload.svg" class="1" id="image-section-1" />
+                  <input
+                    type="file"
+                    name="productImages"
+                    class="image-one"
+                    required
+                    onchange="previewFileHandler(this, 1)"
+                  />
+                </div>
+                <div class="upload-img-box">
+                  <img src="/img/upload.svg" class="2" id="image-section-2" />
+                  <input
+                    type="file"
+                    name="productImages"
+                    class="image-two"
+                    onchange="previewFileHandler(this, 2)"
+                  />
+                </div>
+                <div class="upload-img-box">
+                  <img src="/img/upload.svg" class="3" id="image-section-3" />
+                  <input
+                    type="file"
+                    name="productImages"
+                    class="image-three"
+                    onchange="previewFileHandler(this, 3)"
+                  />
+                </div>
+                <div class="upload-img-box">
+                  <img src="/img/upload.svg" class="4" id="image-section-4" />
+                  <input
+                    type="file"
+                    name="productImages"
+                    class="image-four"
+                    onchange="previewFileHandler(this, 4)"
+                  />
+                </div>
+                <div class="upload-img-box">
+                  <img src="/img/upload.svg" class="5" id="image-section-5" />
+                  <input
+                    type="file"
+                    name="productImages"
+                    class="image-five"
+                    onchange="previewFileHandler(this, 5)"
+                  />
+                </div>
+                <input name="restaurantIid" class="restaurant-id" hidden />
+              </div>
             </div>
-            <div class="half-input">
-              <label>Product Category</label>
-              <select class="product-category" name="productCategory">
-                <option value="SKINCARE" selected>Skincare</option>
-                <option value="MAKEUP">Makeup</option>
-                <option value="SETS">Sets</option>
-              </select>
+
+            <div class="operation-buttons">
+              <button class="btn-text-danger" id="cancel-btn" type="button">Cancel</button>
+              <button type="submit" class="btn-console" id="create-btn">
+                Create
+              </button>
             </div>
-          </div>
-
-          <div class="long-input">
-            <label>Product Volume</label>
-            <input type="text" placeholder="e.g. 50ml" name="productVolume" class="product-volume" />
-          </div>
-          <div class="long-input">
-            <label>Product Description</label>
-            <textarea name="productDesc" class="product-desc"></textarea>
-          </div>
-
-          <div class="img-frame">
-            <label>Product Images</label>
-            <div class="media-frame">
-              <div class="upload-img-box">
-                <img src="/img/upload.svg" class="1" id="image-section-1" />
-                <input
-                  type="file"
-                  id="file"
-                  name="productImages"
-                  class="image-one"
-                  required
-                  onchange="previewFileHandler(this, 1)"
-                />
-              </div>
-              <div class="upload-img-box">
-                <img src="/img/upload.svg" class="2" id="image-section-2" />
-                <input
-                  type="file"
-                  id="file"
-                  name="productImages"
-                  class="image-two"
-                  onchange="previewFileHandler(this, 2)"
-                />
-              </div>
-              <div class="upload-img-box">
-                <img src="/img/upload.svg" class="3" id="image-section-3" />
-                <input
-                  type="file"
-                  id="file"
-                  name="productImages"
-                  class="image-three"
-                  onchange="previewFileHandler(this, 3)"
-                />
-              </div>
-              <div class="upload-img-box">
-                <img src="/img/upload.svg" class="4" id="image-section-4" />
-                <input
-                  type="file"
-                  id="file"
-                  name="productImages"
-                  class="image-four"
-                  onchange="previewFileHandler(this, 4)"
-                />
-              </div>
-              <div class="upload-img-box">
-                <img src="/img/upload.svg" class="5" id="image-section-5" />
-                <input
-                  type="file"
-                  id="file"
-                  name="productImages"
-                  class="image-five"
-                  onchange="previewFileHandler(this, 5)"
-                />
-              </div>
-              <input name="restaurantIid" class="restaurant-id" hidden />
-            </div>
-          </div>
-
-          <div class="operation-buttons">
-            <button class="btn btn-danger" id="cancel-btn">Cancel</button>
-            <button type="submit" class="btn btn-primary" id="create-btn">
-              Create
-            </button>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
     </div>
   </div>

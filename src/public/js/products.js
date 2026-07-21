@@ -11,7 +11,7 @@ $(function () {
     $("#process-btn").css("display", "flex");
   });
 
-  $(".new-product-status").on("change", async function (e) {
+    $(".new-product-status").on("change", async function (e) {
     const id = e.target.id;
     const productStatus = $(`#${id}.new-product-status`).val();
 
@@ -22,7 +22,10 @@ $(function () {
       console.log("response:", response);
       const result = response.data;
       if (result.data) {
-        $(".new-product-status").blur();
+        $(`#${id}.new-product-status`)
+          .removeClass("status-pause status-process status-delete")
+          .addClass(`status-${productStatus.toLowerCase()}`)
+          .blur();
       } else alert("Product update failed!");
     } catch (err) {
       console.log(err);

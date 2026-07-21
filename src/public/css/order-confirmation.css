@@ -14,18 +14,6 @@
   color: var(--ink);
 }
 
-.orders-container .nav-item a {
-  color: var(--ink-soft);
-}
-
-.orders-container .navigation-menu {
-  position: relative;
-  z-index: 10000;
-  color: var(--ink);
-  font-size: 40px;
-  font-family: monospace;
-}
-
 .orders-container .orders-frame {
   position: relative;
   padding-bottom: 80px;
@@ -38,7 +26,6 @@
 
 .orders-container .board {
   position: relative;
-  margin-top: 100px;
   width: 1320px;
   height: auto;
   display: flex;
@@ -57,22 +44,12 @@
 }
 
 .orders-container .header-txt {
-  font-family: "Source Serif Pro";
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-style: normal;
   font-weight: 400;
   font-size: 30px;
   line-height: 25px;
   color: var(--ink);
-}
-
-.orders-container table {
-  background: var(--surface);
-}
-
-.orders-container table td,
-table th {
-  text-align: center;
-  vertical-align: middle;
 }
 
 .orders-container .items-list {

@@ -13,70 +13,105 @@
               <div class="section-title">Order Confirmation</div>
             </div>
             <div class="table-scroll">
-            <table class="table-data">
-              <thead>
-                <tr>
-                  <th style="width: 4%">#</th>
-                  <th style="width: 12%">Customer</th>
-                  <th style="width: 11%">Phone</th>
-                  <th style="width: 16%">Delivery Address</th>
-                  <th style="width: 16%">Items</th>
-                  <th style="width: 8%">Total</th>
-                  <th style="width: 9%">Payment Proof</th>
-                  <th style="width: 12%">Transfer Note</th>
-                  <th style="width: 8%">Status</th>
-                  <th style="width: 14%">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                <!--  LOOP ORDERS: START  -->
-                <% orders.map(function(value, key) { %>
-                <tr class="<%= value.orderStatus === 'WAITING_CONFIRMATION' ? 'row-waiting' : '' %>">
-                  <td class="cell-soft"><%= key + 1 %></td>
-                  <td class="cell-strong"><%= value.memberData[0] ? value.memberData[0].memberNick : '-' %></td>
-                  <td class="cell-soft"><%= value.memberData[0] ? value.memberData[0].memberPhone : '-' %></td>
-                  <td class="cell-soft"><%= value.deliveryAddress || '-' %></td>
-                  <td>
-                    <ul class="items-list">
-                      <% value.orderItems.map(function(item) { %>
-                      <% const product = value.productData.find(function(p) { return String(p._id) === String(item.productId); }); %>
-                      <li><%= product ? product.productName : 'Unknown' %> &times; <%= item.itemQuantity %></li>
-                      <% }) %>
-                    </ul>
-                  </td>
-                  <td class="cell-strong"><%= value.orderTotal.toLocaleString('en-US') %></td>
-                  <td>
-                    <% if (value.paymentProof) { %>
-                    <a href="/<%= value.paymentProof %>" target="_blank">
-                      <img src="/<%= value.paymentProof %>" class="payment-thumb" />
-                    </a>
-                    <% } else { %>
-                    <span class="cell-soft">-</span>
-                    <% } %>
-                  </td>
-                  <td class="cell-soft"><%= value.transferNote || '-' %></td>
-                  <td>
-                    <span class="status-pill status-<%= value.orderStatus.toLowerCase() %>">
-                      <%= value.orderStatus %>
-                    </span>
-                  </td>
-                  <td>
-                    <% if (value.orderStatus === 'WAITING_CONFIRMATION') { %>
-                    <button class="btn-sm-good confirm-btn" id="confirm-<%= value._id %>" type="button">Confirm</button>
-                    <button class="btn-sm-hard reject-btn" id="reject-<%= value._id %>" type="button">Reject</button>
-                    <% } %>
-                  </td>
-                </tr>
-                <% }) %>
-                <!--  LOOP ORDERS: END  -->
-              </tbody>
-            </table>
+              <table class="table-data">
+                <thead>
+                  <tr>
+                    <th style="width: 6%">#</th>
+                    <th style="width: 20%">Customer</th>
+                    <th style="width: 18%">Phone</th>
+                    <th style="width: 16%">Total</th>
+                    <th style="width: 16%">Status</th>
+                    <th style="width: 14%">Date</th>
+                    <th style="width: 12%">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!--  LOOP ORDERS: START  -->
+                  <% orders.map(function(value, key) { %>
+                  <tr class="<%= value.orderStatus === 'WAITING_CONFIRMATION' ? 'row-waiting' : '' %>">
+                    <td class="cell-soft"><%= key + 1 %></td>
+                    <td class="cell-strong"><%= value.memberData[0] ? value.memberData[0].memberNick : '-' %></td>
+                    <td class="cell-soft"><%= value.memberData[0] ? value.memberData[0].memberPhone : '-' %></td>
+                    <td class="cell-strong"><%= value.orderTotal.toLocaleString('en-US') %></td>
+                    <td>
+                      <span class="status-pill status-<%= value.orderStatus.toLowerCase() %>">
+                        <%= value.orderStatus %>
+                      </span>
+                    </td>
+                    <td class="cell-soft"><%= new Date(value.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) %></td>
+                    <td>
+                      <button class="btn-outline view-btn" data-order="<%= value._id %>" type="button">View</button>
+                    </td>
+                  </tr>
+                  <% }) %>
+                  <!--  LOOP ORDERS: END  -->
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
       </div>
     </div>
   </div>
+
+  <!--  ORDER DETAIL MODALS  -->
+  <% orders.map(function(value) { %>
+  <div class="modal-backdrop" id="order-modal-<%= value._id %>">
+    <div class="modal-box">
+      <div class="title-row">
+        <div class="title">Order Detail</div>
+        <button class="modal-close" type="button">&times;</button>
+      </div>
+
+      <div class="order-detail">
+        <div>
+          <div class="card">
+            <div class="label">Customer</div>
+            <div class="name"><%= value.memberData[0] ? value.memberData[0].memberNick : '-' %></div>
+            <div class="sub"><%= value.memberData[0] ? value.memberData[0].memberPhone : '-' %></div>
+            <div class="sub"><%= value.deliveryAddress || 'No delivery address' %></div>
+          </div>
+
+          <div class="card">
+            <div class="label">Order items</div>
+            <% value.orderItems.map(function(item) { %>
+            <% const product = value.productData.find(function(p) { return String(p._id) === String(item.productId); }); %>
+            <div class="item-row">
+              <span class="n"><%= product ? product.productName : 'Unknown' %></span>
+              <span>&times;<%= item.itemQuantity %></span>
+            </div>
+            <% }) %>
+            <div class="total-row">
+              <span>Total</span>
+              <span><%= value.orderTotal.toLocaleString('en-US') %></span>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="label">Transfer note</div>
+            <div class="sub"><%= value.transferNote || 'No note provided' %></div>
+          </div>
+        </div>
+
+        <div>
+          <% if (value.paymentProof) { %>
+          <div class="card">
+            <div class="label">Payment screenshot</div>
+            <img src="/<%= value.paymentProof %>" class="shot-img" />
+          </div>
+          <% } %>
+
+          <% if (value.orderStatus === 'WAITING_CONFIRMATION') { %>
+          <div class="decision-row">
+            <button class="btn-console confirm-btn" id="confirm-<%= value._id %>" type="button">Confirm</button>
+            <button class="btn-text-danger reject-btn" id="reject-<%= value._id %>" type="button">Reject</button>
+          </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+  <% }) %>
 
   <script type="text/javascript" src="/js/order-confirmation.js"></script>
 </body>

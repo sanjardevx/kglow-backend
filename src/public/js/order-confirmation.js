@@ -1,6 +1,21 @@
 console.log("Order confirmation frontend javascript file");
 
 $(function () {
+  $(".view-btn").on("click", function () {
+    const orderId = $(this).data("order");
+    $(`#order-modal-${orderId}`).addClass("open");
+  });
+
+  $(".modal-close").on("click", function () {
+    $(this).closest(".modal-backdrop").removeClass("open");
+  });
+
+  $(".modal-backdrop").on("click", function (e) {
+    if (e.target === this) {
+      $(this).removeClass("open");
+    }
+  });
+
   $(".confirm-btn").on("click", async function (e) {
     const id = e.target.id;
     const orderId = id.replace("confirm-", "");

@@ -25,9 +25,10 @@
               <table class="table-data">
                 <thead>
                   <tr>
-                    <th style="width: 8%">#</th>
-                    <th style="width: 40%">Name</th>
-                    <th style="width: 32%">Phone</th>
+                    <th style="width: 6%">#</th>
+                    <th style="width: 32%">Name</th>
+                    <th style="width: 24%">Phone</th>
+                    <th style="width: 18%">Joined</th>
                     <th style="width: 20%">Status</th>
                   </tr>
                 </thead>
@@ -38,6 +39,7 @@
                     <td class="cell-soft"><%= index+1 %></td>
                     <td class="cell-strong"><%= value.memberNick %></td>
                     <td class="cell-soft"><%= value.memberPhone %></td>
+                    <td class="cell-soft"><%= new Date(value.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) %></td>
                     <td>
                       <select class="status-select status-<%= value.memberStatus.toLowerCase() %> member-status" id="<%= value._id %>">
                         <option value="ACTIVE" <%= value.memberStatus === 'ACTIVE' ? 'selected': '' %>>Active</option>

@@ -11,7 +11,7 @@
 
 .login-container a {
   text-decoration: none;
-  color: black;
+  color: var(--accent);
 }
 
 .login-container .login-frame {
@@ -35,17 +35,17 @@
 }
 
 .login-container .login-top span {
-  font-family: "Poppins";
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-style: normal;
-  font-weight: 700;
-  font-size: 30px;
+  font-weight: 800;
+  font-size: 22px;
   line-height: 34px;
   color: var(--ink);
 }
 
 .login-container .login-top p {
   margin-top: 15px;
-  font-family: "Poppins";
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-style: normal;
   font-weight: 400;
   font-size: 15px;
@@ -54,7 +54,7 @@
 }
 
 .login-container .login-top div {
-  font-family: "Poppins";
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-style: normal;
   font-weight: 400;
   font-size: 15px;
@@ -81,7 +81,7 @@
 
 .login-container .login-input-container label {
   margin-bottom: 0px;
-  font-family: "Poppins";
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-style: normal;
   font-weight: 400;
   font-size: 16px;
@@ -110,7 +110,7 @@
   align-items: center;
   background: var(--accent);
   border-radius: 10px;
-  font-family: "Nunito";
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-style: normal;
   font-weight: 800;
   font-size: 24px;

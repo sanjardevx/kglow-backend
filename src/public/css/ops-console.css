@@ -95,6 +95,7 @@
 /* ---------- Page ---------- */
 
 .body-pad {
+  width: 100%;
   max-width: 1300px;
   margin: 0 auto;
   padding: 26px 28px 30px;

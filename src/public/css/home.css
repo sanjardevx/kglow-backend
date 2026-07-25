@@ -14,53 +14,57 @@
   color: var(--ink);
 }
 
-.home-container .nav-item a {
-  color: var(--ink-soft);
-}
-
-.home-container .nav-item a.disabled {
-  color: var(--ink-faint);
-}
-
-.home-container .navigation-menu {
+.home-container .kglow-stage {
   position: relative;
-  z-index: 10000;
-  color: var(--ink);
-  font-size: 40px;
-  font-family: monospace;
+  width: 100%;
+  height: 520px;
+  margin-top: 20px;
+  overflow: hidden;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 16px;
 }
 
-.home-container .animation-frame {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.home-container .animation-wrapper {
-  position: relative;
-  width: 775px;
-  height: 600px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.home-container .sphere-animation {
-  position: relative;
-  width: 580px;
-  height: 580px;
-}
-
-.home-container .sphere path {
-  fill: url(#sphereGradient);
-  stroke-width: 1px;
-  stroke: rgba(80, 80, 80, 0.35);
+.kglow-main {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   backface-visibility: hidden;
 }
 
-@media (min-width: 500px) {
-  .sphere path {
-    stroke-width: 0.4px;
-  }
+.kg-slide {
+  opacity: 0;
+  width: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.kg-slide .kg-row {
+  display: flex;
+  justify-content: center;
+  flex-wrap: nowrap;
+}
+
+.kg-slide p {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-weight: 800;
+  font-size: 1.7rem;
+  flex-shrink: 0;
+  line-height: 1;
+  margin: 1ch;
+  white-space: nowrap;
+  color: var(--ink-faint);
+}
+
+.kg-features p {
+  color: var(--accent);
+  font-size: 1.2rem;
 }

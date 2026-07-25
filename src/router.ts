@@ -47,6 +47,7 @@ router.get(
 router.post(
   "/order/create",
   memberController.verifyAuth,
+  uploader("orders").array("paymentProof", 4),
   orderController.createOrder,
 );
 router.get(

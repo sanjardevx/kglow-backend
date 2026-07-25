@@ -417,6 +417,10 @@
   display: block;
 }
 
+.shot-img + .shot-img {
+  margin-top: 10px;
+}
+
 .decision-row {
   display: flex;
   gap: 10px;

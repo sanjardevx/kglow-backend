@@ -94,10 +94,12 @@
         </div>
 
         <div>
-          <% if (value.paymentProof) { %>
+          <% if (value.paymentProof && value.paymentProof.length) { %>
           <div class="card">
-            <div class="label">Payment screenshot</div>
-            <img src="/<%= value.paymentProof %>" class="shot-img" />
+            <div class="label"><%= value.paymentProof.length > 1 ? 'Payment screenshots' : 'Payment screenshot' %></div>
+            <% value.paymentProof.forEach(function(proof) { %>
+            <img src="/<%= proof %>" class="shot-img" />
+            <% }) %>
           </div>
           <% } %>
 

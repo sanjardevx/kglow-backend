@@ -19,7 +19,7 @@ export interface Order {
   orderDelivery: number;
   orderStatus: OrderStatus;
   deliveryAddress?: string;
-  paymentProof?: string;
+  paymentProof?: string[];
   transferNote?: string;
   memberId: ObjectId;
   createdAt: Date;
@@ -35,6 +35,13 @@ export interface OrderItemInput {
   itemPrice: number;
   orderId: ObjectId;
   productId?: ObjectId;
+}
+
+export interface OrderCreateInput {
+  items: OrderItemInput[];
+  deliveryAddress?: string;
+  transferNote?: string;
+  paymentProof?: string[];
 }
 
 export interface OrderInquiry {

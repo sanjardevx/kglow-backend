@@ -24,7 +24,7 @@ const orderSchema = new Schema(
     },
 
     paymentProof: {
-      type: String,
+      type: [String],
     },
 
     transferNote: {

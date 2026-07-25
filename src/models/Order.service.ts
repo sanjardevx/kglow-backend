@@ -4,6 +4,7 @@ import OrderModel from "../schema/Order.model";
 import { Member } from "../libs/types/member";
 import {
   Order,
+  OrderCreateInput,
   OrderInquiry,
   OrderItemInput,
   OrderUpdateInput,
@@ -26,10 +27,10 @@ class OrderService {
 
   public async createOrder(
     member: Member,
-    input: OrderItemInput[],
+    input: OrderCreateInput,
   ): Promise<Order> {
     const memberId = shapeIntoMongooseObjectId(member._id);
-    const amount = input.reduce((accumulator: number, item: OrderItemInput) => {
+    const amount = input.items.reduce((accumulator: number, item: OrderItemInput) => {
       return accumulator + item.itemPrice * item.itemQuantity;
     }, 0);
     const delivery = amount < 100 ? 5 : 0;
@@ -39,11 +40,14 @@ class OrderService {
         orderTotal: amount + delivery,
         orderDelivery: delivery,
         memberId: memberId,
+        deliveryAddress: input.deliveryAddress,
+        transferNote: input.transferNote,
+        paymentProof: input.paymentProof,
       });
 
       const orderId = newOrder._id;
       console.log("orderId:", newOrder._id);
-      await this.recordOrderItems(orderId, input);
+      await this.recordOrderItems(orderId, input.items);
       return newOrder;
     } catch (err) {
       console.log("Error, model:createOrder:", err);

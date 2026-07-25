@@ -3,7 +3,7 @@ import { T } from "../libs/types/common";
 import { ExtendenRequest } from "../libs/types/member";
 import { Request, Response } from "express";
 import OrderService from "../models/Order.service";
-import { OrderInquiry, OrderUpdateInput } from "../libs/types/order";
+import { OrderCreateInput, OrderInquiry, OrderUpdateInput } from "../libs/types/order";
 import { OrderStatus } from "../libs/enums/order.enum";
 
 const orderService = new OrderService();
@@ -13,7 +13,13 @@ const orderController: T = {};
 orderController.createOrder = async (req: ExtendenRequest, res: Response) => {
   try {
     console.log("createOrder");
-    const result = await orderService.createOrder(req.member, req.body);
+    const input: OrderCreateInput = {
+      items: JSON.parse(req.body.items),
+      deliveryAddress: req.body.deliveryAddress,
+      transferNote: req.body.transferNote,
+      paymentProof: req.files?.map((file) => file.path),
+    };
+    const result = await orderService.createOrder(req.member, input);
 
     res.status(HttpCode.CREATED).json(result);
   } catch (err) {

@@ -7,6 +7,7 @@
 
 import express from "express";
 import path from "path";
+import cors from "cors";
 import router from "./router";
 import routerAdmin from "./router-admin";
 import morgan from "morgan";
@@ -27,6 +28,9 @@ const store = new MongoDBStore({
 /** 1 - CREATE THE APP **/
 const app = express();
 
+app.use(
+  cors({ origin: "http://localhost:8002", credentials: true }),
+); // allows the React SPA (dev server, different port) to call this API
 app.use(express.static(path.join(__dirname, "public")));  // serves static files (images, css, js) from /public folder
 app.use("/uploads", express.static("uploads"));           // serves static files (images, css, js) from /uploads folder
 app.use(express.urlencoded({ extended: true }));          // lets express read data sent from HTML forms

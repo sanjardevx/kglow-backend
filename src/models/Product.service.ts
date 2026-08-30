@@ -25,12 +25,23 @@ class ProductService {
 
   /** SPA */
   public async getProducts(inquiry: ProductInquiry): Promise<Product[]> {
-    const match: T = { productStatus: ProductStatus.PROCESS };
+    // PROCESS = in stock, PAUSE = sold out (still shown, frontend renders the
+    // "Sold Out" badge and disables purchase actions). DELETE is the only
+    // status excluded here — that's a soft delete, never shown to customers.
+    const match: T = {
+      productStatus: { $in: [ProductStatus.PROCESS, ProductStatus.PAUSE] },
+    };
 
     if (inquiry.productCategory)
       match.productCategory = inquiry.productCategory;
     if (inquiry.search) {
-      match.productName = { $regex: new RegExp(inquiry.search, "i") };
+      // Multi-brand catalog: shoppers search by brand ("Missha") as often as
+      // by product name, so both fields have to match.
+      const pattern = new RegExp(inquiry.search, "i");
+      match.$or = [
+        { productName: { $regex: pattern } },
+        { productBrand: { $regex: pattern } },
+      ];
     }
 
     const sort: T =
@@ -60,7 +71,7 @@ class ProductService {
     let result = await this.productModel
       .findOne({
         _id: productId,
-        productStatus: ProductStatus.PROCESS,
+        productStatus: { $in: [ProductStatus.PROCESS, ProductStatus.PAUSE] },
       })
       .exec();
 

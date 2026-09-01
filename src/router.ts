@@ -11,6 +11,7 @@ import memberController from "./controllers/member.controller";
 import productController from "./controllers/product.controller";
 import uploader from "./libs/utils/uploader";
 import orderController from "./controllers/order.controller";
+import reviewController from "./controllers/review.controller";
 
 //** Member **/
 // router.get("/member/check-me", memberController.checkAuthSession);
@@ -42,6 +43,10 @@ router.get(
   memberController.retrieveAuth,
   productController.getProduct,
 );
+
+//** Review **/
+router.get("/review/all", reviewController.getReviews);
+router.get("/review/product/:productId", reviewController.getProductReviews);
 
 //** Order **/
 router.post(

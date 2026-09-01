@@ -10,6 +10,7 @@ const routerAdmin = express.Router(); // creates a mini-router just for admin pa
 import restaurantController from "./controllers/restaurant.controller";
 import productController from "./controllers/product.controller";
 import orderController from "./controllers/order.controller";
+import reviewController from "./controllers/review.controller";
 import makeUploader from "./libs/utils/uploader";
 
 /** Restaurant **/
@@ -45,6 +46,24 @@ routerAdmin.post(
   "/product/:id",
   restaurantController.verifyRestaurant,
   productController.updateChosenProduct,
+);
+
+/** Review routes  **/
+// reviews are text-only — no uploader middleware, the form posts urlencoded
+routerAdmin.get(
+  "/review/all",
+  restaurantController.verifyRestaurant,
+  reviewController.getAllReviews,
+);
+routerAdmin.post(
+  "/review/create",
+  restaurantController.verifyRestaurant,
+  reviewController.createNewReview,
+);
+routerAdmin.post(
+  "/review/:id",
+  restaurantController.verifyRestaurant,
+  reviewController.updateChosenReview,
 );
 
 /** Order routes **/

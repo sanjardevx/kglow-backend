@@ -1,0 +1,135 @@
+<%- include('includes/header') %>
+
+<link rel="stylesheet" type="text/css" href="/css/reviews.css" />
+
+<body>
+  <div class="reviews-container">
+    <%- include('includes/nav', { active: 'reviews' }) %>
+    <div class="body-pad">
+      <div class="reviews-frame">
+        <div class="board">
+          <div class="reviews-table">
+            <div class="section-head">
+              <div class="section-title">Reviews</div>
+              <button class="btn-console" id="process-btn" type="button">+ New Review</button>
+            </div>
+            <div class="table-scroll">
+            <table class="table-data">
+              <thead>
+                <tr>
+                  <th style="width: 5%">#</th>
+                  <th style="width: 20%">Product</th>
+                  <th style="width: 14%">Reviewer</th>
+                  <th style="width: 10%">Stars</th>
+                  <th style="width: 27%">Review</th>
+                  <th style="width: 10%">Date</th>
+                  <th style="width: 14%">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!--  LOOP REVIEWS: START  -->
+                <% reviews.map(function(value, key) { %>
+                <tr>
+                  <td class="cell-soft"><%= key + 1 %></td>
+                  <td>
+                    <% if (value.productData[0]) { %>
+                    <div class="cell-strong"><%= value.productData[0].productName %></div>
+                    <div class="cell-soft product-brand-sm"><%= value.productData[0].productBrand %></div>
+                    <% } else { %>
+                    <div class="cell-soft">Deleted product</div>
+                    <% } %>
+                  </td>
+                  <td class="cell-strong"><%= value.reviewerName %></td>
+                  <td class="cell-soft stars-cell"><%= "★".repeat(value.reviewStars) %></td>
+                  <td class="cell-soft" title="<%= value.reviewText %>"><%= value.reviewText %></td>
+                  <td class="cell-soft"><%= new Date(value.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) %></td>
+                  <td>
+                    <select
+                      class="status-select status-<%= value.reviewStatus.toLowerCase() %> new-review-status"
+                      id="<%= value._id %>"
+                    >
+                      <option value="ACTIVE"
+                        <%= value.reviewStatus === 'ACTIVE' ? 'selected' : '' %> >Active</option>
+                      <option value="HIDDEN"
+                        <%= value.reviewStatus === 'HIDDEN' ? 'selected' : '' %> >Hidden</option>
+                    </select>
+                  </td>
+                </tr>
+                <% }) %>
+                <!--  LOOP REVIEWS: END  -->
+              </tbody>
+            </table>
+            </div>
+          </div>
+          <form
+            onsubmit="return validateForm()"
+            action="/admin/review/create"
+            method="POST"
+            class="review-container"
+          >
+            <div class="long-input" style="display: flex; align-items: center">
+              <span class="new-review-txt">NEW REVIEW DETAIL</span>
+            </div>
+
+            <div class="long-input">
+              <label>Product</label>
+              <select class="review-product" name="productId">
+                <option value="">-- Choose product --</option>
+                <% products.map(function(product) { %>
+                <option value="<%= product._id %>">
+                  <%= product.productBrand %> — <%= product.productName %>
+                </option>
+                <% }) %>
+              </select>
+            </div>
+
+            <div class="half-input-frame">
+              <div class="half-input">
+                <label>Reviewer Name</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Nodira K."
+                  name="reviewerName"
+                  class="reviewer-name"
+                />
+              </div>
+              <div class="half-input">
+                <label>Stars</label>
+                <select class="review-stars" name="reviewStars">
+                  <option value="5" selected>5 — ★★★★★</option>
+                  <option value="4">4 — ★★★★</option>
+                  <option value="3">3 — ★★★</option>
+                  <option value="2">2 — ★★</option>
+                  <option value="1">1 — ★</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="long-input">
+              <label>Review Text</label>
+              <textarea name="reviewText" class="review-text"></textarea>
+            </div>
+
+            <input
+              name="reviewStatus"
+              value="ACTIVE"
+              class="review-status"
+              hidden
+            />
+
+            <div class="operation-buttons">
+              <button class="btn-text-danger" id="cancel-btn" type="button">Cancel</button>
+              <button type="submit" class="btn-console" id="create-btn">
+                Create
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="text/javascript" src="/js/reviews.js"></script>
+</body>
+
+<%- include('includes/footer') %>

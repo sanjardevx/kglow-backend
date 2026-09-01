@@ -263,6 +263,11 @@
   color: var(--warn);
 }
 
+.status-select.status-hidden {
+  background: var(--surface-2);
+  color: var(--ink-soft);
+}
+
 
 /* ---------- Outline button ---------- */
 

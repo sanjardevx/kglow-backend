@@ -65,10 +65,16 @@ function previewFileHandler(input, order) {
 
   const file = $(`.${imgClassName}`).get(0).files[0];
   const fileType = file["type"];
-  const validImageType = ["image/jpg", "image/jpeg", "image/png"];
+  const validImageType = [
+    "image/jpg",
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+    "image/avif",
+  ];
 
   if (!validImageType.includes(fileType)) {
-    alert("Please insert only jpeg, jpg and png!");
+    alert("Please insert only jpeg, jpg, png, webp or avif!");
   } else {
     if (file) {
       const reader = new FileReader();

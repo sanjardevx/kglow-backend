@@ -94,10 +94,11 @@
         </div>
 
         <div>
-          <% if (value.paymentProof && value.paymentProof.length) { %>
+          <% var proofList = Array.isArray(value.paymentProof) ? value.paymentProof : (value.paymentProof ? [value.paymentProof] : []); %>
+          <% if (proofList.length) { %>
           <div class="card">
-            <div class="label"><%= value.paymentProof.length > 1 ? 'Payment screenshots' : 'Payment screenshot' %></div>
-            <% value.paymentProof.forEach(function(proof) { %>
+            <div class="label"><%= proofList.length > 1 ? 'Payment screenshots' : 'Payment screenshot' %></div>
+            <% proofList.forEach(function(proof) { %>
             <img src="/<%= proof %>" class="shot-img" />
             <% }) %>
           </div>

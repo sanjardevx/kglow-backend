@@ -1,0 +1,146 @@
+<%- include('includes/header') %>
+
+<link rel="stylesheet" type="text/css" href="/css/tutorials.css" />
+
+<body>
+  <div class="tutorials-container">
+    <%- include('includes/nav', { active: 'tutorials' }) %>
+    <div class="body-pad">
+      <div class="tutorials-frame">
+        <div class="board">
+          <div class="section-head">
+            <div class="section-title">Live Tutorials</div>
+            <button class="btn-console" id="process-btn" type="button">+ New Tutorial</button>
+          </div>
+
+          <!--  LOOP TUTORIALS: START  -->
+          <div class="tutorial-grid">
+            <% tutorials.map(function(value) { %>
+            <div class="tutorial-card" id="card-<%= value._id %>">
+              <div class="tutorial-embed">
+                <% if (value.tutorialPlatform === 'YOUTUBE') { %>
+                <iframe
+                  src="https://www.youtube.com/embed/<%= value.tutorialEmbedId %>"
+                  title="<%= value.tutorialTitle %>"
+                  frameborder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowfullscreen
+                ></iframe>
+                <% } else { %>
+                <blockquote
+                  class="instagram-media"
+                  data-instgrm-permalink="<%= value.tutorialUrl %>"
+                  data-instgrm-version="14"
+                ></blockquote>
+                <% } %>
+              </div>
+
+              <div class="tutorial-body">
+                <div class="tutorial-title"><%= value.tutorialTitle %></div>
+                <% if (value.tutorialCategory) { %>
+                <div class="tutorial-category"><%= value.tutorialCategory %></div>
+                <% } %>
+                <div class="tutorial-desc"><%= value.tutorialDescription || '' %></div>
+              </div>
+
+              <div class="tutorial-toolbar">
+                <select
+                  class="status-select status-<%= value.tutorialStatus.toLowerCase() %> tutorial-status"
+                  id="<%= value._id %>"
+                >
+                  <option value="ACTIVE" <%= value.tutorialStatus === 'ACTIVE' ? 'selected' : '' %>>Active</option>
+                  <option value="HIDDEN" <%= value.tutorialStatus === 'HIDDEN' ? 'selected' : '' %>>Hidden</option>
+                </select>
+
+                <button class="btn-outline tutorial-edit-btn" type="button" data-id="<%= value._id %>">
+                  Edit
+                </button>
+                <button
+                  class="btn-text-danger tutorial-delete-btn"
+                  type="button"
+                  data-id="<%= value._id %>"
+                >
+                  Delete
+                </button>
+              </div>
+
+              <div class="tutorial-edit-form" id="edit-<%= value._id %>">
+                <div class="long-input">
+                  <label>Title</label>
+                  <input type="text" class="edit-title" value="<%= value.tutorialTitle %>" />
+                </div>
+                <div class="long-input">
+                  <label>Category</label>
+                  <input type="text" class="edit-category" value="<%= value.tutorialCategory || '' %>" />
+                </div>
+                <div class="long-input">
+                  <label>Description</label>
+                  <textarea class="edit-desc"><%= value.tutorialDescription || '' %></textarea>
+                </div>
+                <div class="operation-buttons">
+                  <button class="btn-outline tutorial-edit-cancel" type="button" data-id="<%= value._id %>">Cancel</button>
+                  <button class="btn-console tutorial-edit-save" type="button" data-id="<%= value._id %>">Save</button>
+                </div>
+              </div>
+            </div>
+            <% }) %>
+          </div>
+          <!--  LOOP TUTORIALS: END  -->
+
+          <form
+            onsubmit="return validateTutorialForm()"
+            action="/admin/tutorial/create"
+            method="POST"
+            class="tutorial-container"
+          >
+            <div class="long-input" style="display: flex; align-items: center">
+              <span class="new-tutorial-txt">NEW TUTORIAL</span>
+            </div>
+
+            <div class="long-input">
+              <label>Video link (YouTube or Instagram)</label>
+              <input
+                type="text"
+                placeholder="https://www.youtube.com/shorts/... or https://www.instagram.com/reel/..."
+                name="tutorialUrl"
+                id="tutorial-url-input"
+                autocomplete="off"
+              />
+            </div>
+
+            <!-- Live preview — fills in as soon as the pasted link is
+                 recognised, no separate "Preview" step. -->
+            <div class="tutorial-url-preview" id="tutorial-url-preview"></div>
+
+            <div class="long-input">
+              <label>Title</label>
+              <input type="text" placeholder="e.g. Morning routine with Dokdo Toner" name="tutorialTitle" id="tutorial-title-input" />
+            </div>
+
+            <div class="long-input">
+              <label>Category</label>
+              <input type="text" placeholder="e.g. Skincare" name="tutorialCategory" />
+            </div>
+
+            <div class="long-input">
+              <label>Description</label>
+              <textarea name="tutorialDescription" id="tutorial-desc-input"></textarea>
+            </div>
+
+            <div class="operation-buttons">
+              <button class="btn-outline" id="cancel-btn" type="button">Cancel</button>
+              <button type="submit" class="btn-console" id="create-btn">
+                Upload
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script async src="//www.instagram.com/embed.js"></script>
+  <script type="text/javascript" src="/js/tutorials.js"></script>
+</body>
+
+<%- include('includes/footer') %>

@@ -23,6 +23,8 @@ export enum Message {
   BLOCKED_USER = "You have been blocked, contact the resturant!",
   WRONG_PASSWORD = "Wrong password, please try again!",
   NOT_AUTHENTICATED = "You are not authenticated, please login first!",
+
+  INVALID_TUTORIAL_LINK = "Please paste a valid YouTube or Instagram link!",
 }
 
 // Custom error class — combines an HTTP code + a message into one object

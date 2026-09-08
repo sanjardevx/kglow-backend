@@ -11,6 +11,7 @@ import adminController from "./controllers/admin.controller";
 import productController from "./controllers/product.controller";
 import orderController from "./controllers/order.controller";
 import reviewController from "./controllers/review.controller";
+import tutorialController from "./controllers/tutorial.controller";
 import makeUploader from "./libs/utils/uploader";
 
 /** Auth / session **/
@@ -64,6 +65,29 @@ routerAdmin.post(
   "/review/:id",
   adminController.verifyAdvisor,
   reviewController.updateChosenReview,
+);
+
+/** Tutorial routes **/
+// link only — no uploader middleware, the form posts urlencoded
+routerAdmin.get(
+  "/tutorial/all",
+  adminController.verifyAdvisor,
+  tutorialController.getAllTutorials,
+);
+routerAdmin.post(
+  "/tutorial/create",
+  adminController.verifyAdvisor,
+  tutorialController.createNewTutorial,
+);
+routerAdmin.post(
+  "/tutorial/:id",
+  adminController.verifyAdvisor,
+  tutorialController.updateChosenTutorial,
+);
+routerAdmin.delete(
+  "/tutorial/:id",
+  adminController.verifyAdvisor,
+  tutorialController.deleteTutorial,
 );
 
 /** Order routes **/

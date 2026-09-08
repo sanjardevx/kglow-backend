@@ -44,6 +44,14 @@ const productSchema = new Schema(
       type: String,
     },
 
+    productHowToUse: {
+      type: String,
+    },
+
+    productSuitableFor: {
+      type: String,
+    },
+
     productImages: {
       type: [String],
       default: [],

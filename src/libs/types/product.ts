@@ -11,6 +11,8 @@ export interface Product {
   productVolume: string;
   productLeftCount: number;
   productDesc?: string;
+  productHowToUse?: string;
+  productSuitableFor?: string;
   productImages: string[];
   productViews: number;
 }
@@ -32,6 +34,8 @@ export interface ProductInput {
   productVolume?: string;
   productLeftCount: number;
   productDesc?: string;
+  productHowToUse?: string;
+  productSuitableFor?: string;
   productImages?: string[];
   productViews?: number;
 }
@@ -46,6 +50,8 @@ export interface ProductUpdateInput {
   productVolume?: string;
   productLeftCount?: number;
   productDesc?: string;
+  productHowToUse?: string;
+  productSuitableFor?: string;
   productImages?: string[];
   productViews?: number;
 }

@@ -1,50 +1,50 @@
 /**
- * Purpose:  Maps all /admin/* URLs to the correct restaurant controller method
+ * Purpose:  Maps all /admin/* URLs to the correct admin controller method
  * Called by: app.ts — app.use("/admin", routerAdmin)
- * Sends to:  restaurant.controller.ts
- * Flow:     Browser → /admin/* → routerAdmin → restaurantController → Service → DB
+ * Sends to:  admin.controller.ts
+ * Flow:     Browser → /admin/* → routerAdmin → adminController → Service → DB
  */
 
 import express from "express";
 const routerAdmin = express.Router(); // creates a mini-router just for admin pages
-import restaurantController from "./controllers/restaurant.controller";
+import adminController from "./controllers/admin.controller";
 import productController from "./controllers/product.controller";
 import orderController from "./controllers/order.controller";
 import reviewController from "./controllers/review.controller";
 import makeUploader from "./libs/utils/uploader";
 
-/** Restaurant **/
-routerAdmin.get("/", restaurantController.goHome); // GET  /admin/        → shows admin home page
+/** Auth / session **/
+routerAdmin.get("/", adminController.goHome); // GET  /admin/        → shows admin home page
 
 routerAdmin
-  .get("/login", restaurantController.getLogin) // GET  /admin/login   → shows the login form
-  .post("/login", restaurantController.processLogin); // POST /admin/login   → handles login form submission
+  .get("/login", adminController.getLogin) // GET  /admin/login   → shows the login form
+  .post("/login", adminController.processLogin); // POST /admin/login   → handles login form submission
 
 routerAdmin
-  .get("/signup", restaurantController.getSignup) // GET  /admin/signup  → shows the signup form
+  .get("/signup", adminController.getSignup) // GET  /admin/signup  → shows the signup form
   .post(
     "/signup",
     makeUploader("members").single("memberImage"),
-    restaurantController.processSignup, // POST /admin/signup  → handles signup form submission
+    adminController.processSignup, // POST /admin/signup  → handles signup form submission
   );
-routerAdmin.get("/logout", restaurantController.logout);
-routerAdmin.get("/check-me", restaurantController.checkAuthSession);
+routerAdmin.get("/logout", adminController.logout);
+routerAdmin.get("/check-me", adminController.checkAuthSession);
 
 /** Product routes  **/
 routerAdmin.get(
   "/product/all",
-  restaurantController.verifyRestaurant,
+  adminController.verifyAdvisor,
   productController.getAllProducts,
 );
 routerAdmin.post(
   "/product/create",
-  restaurantController.verifyRestaurant,
+  adminController.verifyAdvisor,
   makeUploader("products").array("productImages", 5),
   productController.createNewProduct,
 );
 routerAdmin.post(
   "/product/:id",
-  restaurantController.verifyRestaurant,
+  adminController.verifyAdvisor,
   productController.updateChosenProduct,
 );
 
@@ -52,44 +52,44 @@ routerAdmin.post(
 // reviews are text-only — no uploader middleware, the form posts urlencoded
 routerAdmin.get(
   "/review/all",
-  restaurantController.verifyRestaurant,
+  adminController.verifyAdvisor,
   reviewController.getAllReviews,
 );
 routerAdmin.post(
   "/review/create",
-  restaurantController.verifyRestaurant,
+  adminController.verifyAdvisor,
   reviewController.createNewReview,
 );
 routerAdmin.post(
   "/review/:id",
-  restaurantController.verifyRestaurant,
+  adminController.verifyAdvisor,
   reviewController.updateChosenReview,
 );
 
 /** Order routes **/
 routerAdmin.get(
   "/order/all",
-  restaurantController.verifyRestaurant,
+  adminController.verifyAdvisor,
   orderController.getAllOrders,
 );
 
 routerAdmin.post(
   "/order/update",
-  restaurantController.verifyRestaurant,
+  adminController.verifyAdvisor,
   orderController.updateOrderStatus,
 );
 
 /** User  **/
 routerAdmin.get(
   "/user/all",
-  restaurantController.verifyRestaurant,
-  restaurantController.getUsers,
+  adminController.verifyAdvisor,
+  adminController.getUsers,
 );
 
 routerAdmin.post(
   "/user/edit",
-  restaurantController.verifyRestaurant,
-  restaurantController.updateChosenUser,
+  adminController.verifyAdvisor,
+  adminController.updateChosenUser,
 );
 
 export default routerAdmin;

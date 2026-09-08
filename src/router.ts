@@ -15,7 +15,6 @@ import reviewController from "./controllers/review.controller";
 
 //** Member **/
 // router.get("/member/check-me", memberController.checkAuthSession);
-router.get("/member/restaurant", memberController.getRestaurant);
 router.post("/member/login", memberController.login);
 router.post("/member/signup", memberController.signup);
 router.post(

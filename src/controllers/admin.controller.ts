@@ -7,9 +7,9 @@ import Errors, { HttpCode, Message } from "../libs/Errors";
 
 const memberService = new MemberService(); // create instance of the service
 
-const restaurantController: T = {};
+const adminController: T = {};
 
-restaurantController.goHome = (req: Request, res: Response) => {
+adminController.goHome = (req: Request, res: Response) => {
   try {
     console.log("goHome");
     res.render("home");
@@ -21,7 +21,7 @@ restaurantController.goHome = (req: Request, res: Response) => {
 };
 
 // GET /admin/signup  →  shows the signup page
-restaurantController.getSignup = (req: Request, res: Response) => {
+adminController.getSignup = (req: Request, res: Response) => {
   try {
     console.log("getSignup");
     res.render("signup");
@@ -32,7 +32,7 @@ restaurantController.getSignup = (req: Request, res: Response) => {
 };
 
 // GET /admin/login  →  shows the login page
-restaurantController.getLogin = (req: Request, res: Response) => {
+adminController.getLogin = (req: Request, res: Response) => {
   try {
     console.log("getLogin");
     res.render("login");
@@ -42,8 +42,8 @@ restaurantController.getLogin = (req: Request, res: Response) => {
   }
 };
 
-// POST /admin/signup  →  receives signup form data, saves a new restaurant to MongoDB
-restaurantController.processSignup = async (
+// POST /admin/signup  →  receives signup form data, saves a new advisor to MongoDB
+adminController.processSignup = async (
   req: AdminRequest,
   res: Response,
 ) => {
@@ -72,7 +72,7 @@ restaurantController.processSignup = async (
 };
 
 // POST /admin/login  →  receives login form data and processes it
-restaurantController.processLogin = async (
+adminController.processLogin = async (
   req: AdminRequest,
   res: Response,
 ) => {
@@ -95,7 +95,7 @@ restaurantController.processLogin = async (
   }
 };
 
-restaurantController.logout = async (req: AdminRequest, res: Response) => {
+adminController.logout = async (req: AdminRequest, res: Response) => {
   try {
     console.log("logout");
     req.session.destroy(function () {
@@ -107,7 +107,7 @@ restaurantController.logout = async (req: AdminRequest, res: Response) => {
   }
 };
 
-restaurantController.getUsers = async (req: Request, res: Response) => {
+adminController.getUsers = async (req: Request, res: Response) => {
   try {
     console.log("getUsers");
     const result = await memberService.getUsers();
@@ -119,7 +119,7 @@ restaurantController.getUsers = async (req: Request, res: Response) => {
   }
 };
 
-restaurantController.updateChosenUser = async (req: Request, res: Response) => {
+adminController.updateChosenUser = async (req: Request, res: Response) => {
   try {
     console.log("updateChosenUser");
     const result = await memberService.updateChosenUser(req.body);
@@ -132,7 +132,7 @@ restaurantController.updateChosenUser = async (req: Request, res: Response) => {
   }
 };
 
-restaurantController.checkAuthSession = async (
+adminController.checkAuthSession = async (
   req: AdminRequest,
   res: Response,
 ) => {
@@ -147,7 +147,7 @@ restaurantController.checkAuthSession = async (
   }
 };
 
-restaurantController.verifyRestaurant = (
+adminController.verifyAdvisor = (
   req: AdminRequest,
   res: Response,
   next: NextFunction,
@@ -163,4 +163,4 @@ restaurantController.verifyRestaurant = (
   }
 };
 
-export default restaurantController;
+export default adminController;

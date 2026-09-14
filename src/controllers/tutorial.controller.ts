@@ -13,12 +13,11 @@ const tutorialController: T = {};
 tutorialController.getTutorials = async (req: Request, res: Response) => {
   try {
     console.log("getTutorials");
-    const { page, limit, tutorialCategory } = req.query;
+    const { page, limit } = req.query;
     const inquiry: TutorialInquiry = {
       page: page ? Number(page) : 1,
       limit: limit ? Number(limit) : 12,
     };
-    if (tutorialCategory) inquiry.tutorialCategory = String(tutorialCategory);
 
     const result = await tutorialService.getTutorials(inquiry);
 

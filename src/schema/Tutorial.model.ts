@@ -15,10 +15,6 @@ const tutorialSchema = new Schema(
       required: true,
     },
 
-    tutorialDescription: {
-      type: String,
-    },
-
     tutorialPlatform: {
       type: String,
       enum: TutorialPlatform,
@@ -36,10 +32,6 @@ const tutorialSchema = new Schema(
     },
 
     tutorialThumbnail: {
-      type: String,
-    },
-
-    tutorialCategory: {
       type: String,
     },
 

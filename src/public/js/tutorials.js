@@ -37,7 +37,7 @@ function renderTutorialPreview(url) {
 
   if (parsed.platform === "YOUTUBE") {
     $preview.html(
-      `<iframe src="https://www.youtube.com/embed/${parsed.embedId}" frameborder="0" allowfullscreen></iframe>`,
+      `<iframe src="https://www.youtube.com/embed/${parsed.embedId}?rel=0&modestbranding=1&iv_load_policy=3" frameborder="0" allowfullscreen></iframe>`,
     );
   } else {
     $preview.html(
@@ -68,20 +68,49 @@ $(function () {
     previewTimer = setTimeout(() => renderTutorialPreview(url), 400);
   });
 
-  /** Status toggle **/
-  $(".tutorial-status").on("change", async function (e) {
-    const id = e.target.id;
-    const tutorialStatus = $(`#${id}.tutorial-status`).val();
+  /** Click-to-play: swap the thumbnail button for the real YouTube iframe
+   * only once the admin actually wants to watch it. Built with .attr()
+   * rather than a template-literal string so a title containing a quote
+   * character can't break out of an attribute. */
+  $(".tutorial-play-btn").on("click", function () {
+    const embedId = $(this).data("embed-id");
+    const title = $(this).data("title");
+    const $iframe = $("<iframe>")
+      .attr(
+        "src",
+        `https://www.youtube.com/embed/${embedId}?autoplay=1&rel=0&modestbranding=1&iv_load_policy=3`,
+      )
+      .attr("title", title)
+      .attr("frameborder", "0")
+      .attr(
+        "allow",
+        "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture",
+      )
+      .attr("allowfullscreen", "");
+    $(this).replaceWith($iframe);
+  });
+
+  /** Status toggle — the colour now lives on the .tutorial-status-wrap
+   * (the dot + pill), not the select itself, so the class swap targets
+   * that wrapper instead. **/
+  $(".tutorial-status").on("change", async function () {
+    const id = this.id;
+    const tutorialStatus = $(this).val();
 
     try {
       const response = await axios.post(`/admin/tutorial/${id}`, {
         tutorialStatus: tutorialStatus,
       });
       if (response.data.data) {
-        $(`#${id}.tutorial-status`)
+        $(this)
+          .closest(".tutorial-status-wrap")
           .removeClass("status-active status-hidden")
-          .addClass(`status-${tutorialStatus.toLowerCase()}`)
-          .blur();
+          .addClass(`status-${tutorialStatus.toLowerCase()}`);
+        $(this).blur();
+        // The edit overlay carries its own copy of the status and saves it
+        // alongside the title/URL — without this it would still hold the
+        // pre-change value and silently revert the status on the next save.
+        $(`#tutorial-edit-overlay-${id}`).find(".edit-status").val(tutorialStatus);
       } else alert("Tutorial update failed!");
     } catch (err) {
       console.log(err);
@@ -89,42 +118,47 @@ $(function () {
     }
   });
 
-  /** Inline edit open/close **/
+  /** Edit — an overlay scoped to just that one card (`#tutorial-edit-
+   * overlay-<id>`), not a page-wide modal and not an inline panel that grew
+   * the card's own height — either of those used to spill into the grid
+   * row's other cards. **/
   $(".tutorial-edit-btn").on("click", function () {
     const id = $(this).data("id");
-    $(`#edit-${id}`).slideToggle(300);
+    $(`#tutorial-edit-overlay-${id}`).addClass("open");
   });
 
-  $(".tutorial-edit-cancel").on("click", function () {
-    const id = $(this).data("id");
-    $(`#edit-${id}`).slideUp(300);
-  });
+  $(".tutorial-edit-cancel, .tutorial-edit-overlay-close").on(
+    "click",
+    function () {
+      const id = $(this).data("id");
+      $(`#tutorial-edit-overlay-${id}`).removeClass("open");
+    },
+  );
 
   $(".tutorial-edit-save").on("click", async function () {
     const id = $(this).data("id");
-    const $form = $(`#edit-${id}`);
-    const tutorialTitle = $form.find(".edit-title").val();
-    const tutorialCategory = $form.find(".edit-category").val();
-    const tutorialDescription = $form.find(".edit-desc").val();
+    const $overlay = $(`#tutorial-edit-overlay-${id}`);
+    const tutorialTitle = $overlay.find(".edit-title").val();
+    const tutorialUrl = $overlay.find(".edit-url").val();
+    const tutorialStatus = $overlay.find(".edit-status").val();
 
-    if (!tutorialTitle) {
-      alert("Title cannot be empty!");
+    if (!tutorialTitle || !tutorialUrl) {
+      alert("Title and video link cannot be empty!");
       return;
     }
 
     try {
       const response = await axios.post(`/admin/tutorial/${id}`, {
         tutorialTitle,
-        tutorialCategory,
-        tutorialDescription,
+        tutorialUrl,
+        tutorialStatus,
       });
-      const result = response.data.data;
-      if (result) {
-        const $card = $(`#card-${id}`);
-        $card.find(".tutorial-title").text(result.tutorialTitle);
-        $card.find(".tutorial-desc").text(result.tutorialDescription || "");
-        $card.find(".tutorial-category").text(result.tutorialCategory || "");
-        $form.slideUp(300);
+      if (response.data.data) {
+        // The link can change platform/embed id, which changes what markup
+        // the card needs to show (iframe vs. thumbnail vs. Instagram
+        // blockquote) — simplest to just re-render from the server rather
+        // than patch that live.
+        window.location.reload();
       } else alert("Tutorial update failed!");
     } catch (err) {
       console.log(err);

@@ -27,7 +27,7 @@
 
 .tutorials-container .tutorials-frame .board {
   position: relative;
-  width: 1320px;
+  width: 1150px;
   height: auto;
   display: flex;
   flex-direction: column;
@@ -39,23 +39,32 @@
 .tutorial-grid {
   width: 100%;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  /* fr tracks, not fixed px — 4 across just shrinks each card to fit the
+     same board width instead of overflowing it. */
+  grid-template-columns: repeat(4, 1fr);
   gap: 20px;
   margin-top: 30px;
 }
 
 .tutorial-card {
+  position: relative;
   display: flex;
   flex-direction: column;
   background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: 18px;
   overflow: hidden;
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.08);
 }
 
+/* Full-bleed at desktop (4 across makes the card ~272px, so the cap never
+   engages there), but capped below it: the grid drops to 2 columns at
+   1000px and 1 at 640px, which widens the card enough that an uncapped
+   9:16 box would be ~700px tall on a tablet and ~900px on a phone. */
 .tutorial-embed {
   position: relative;
   width: 100%;
+  max-width: 280px;
+  margin: 0 auto;
   aspect-ratio: 9 / 16;
   background: var(--surface-2);
 }
@@ -66,6 +75,49 @@
   width: 100%;
   height: 100%;
   border: 0;
+}
+
+/* Click-to-play stand-in — same box as the iframe it replaces itself
+   with, so nothing shifts size when the admin clicks it. */
+.tutorial-play-btn {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  cursor: pointer;
+  background: var(--surface-2);
+}
+
+.tutorial-thumb {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.tutorial-play-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  padding-left: 4px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: 18px;
+  transition: background-color 0.15s ease;
+}
+
+.tutorial-play-btn:hover .tutorial-play-icon {
+  background: rgba(0, 0, 0, 0.75);
 }
 
 /* Instagram's own embed script sizes the blockquote itself once processed;
@@ -80,27 +132,20 @@
   padding: 14px 16px 4px;
 }
 
+/* Reserved to exactly 2 lines regardless of the actual title length —
+   `-webkit-line-clamp` truncates a longer title with an ellipsis instead of
+   wrapping to a 3rd line, and the fixed height keeps every card's title
+   block the same size so the toolbar below always lands on the same row. */
 .tutorial-title {
+  height: 48px;
   font-weight: 700;
-  font-size: 15px;
+  font-size: 16px;
+  line-height: 1.3;
   color: var(--ink);
-}
-
-.tutorial-category {
-  margin-top: 4px;
-  display: inline-block;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--accent);
-}
-
-.tutorial-desc {
-  margin-top: 6px;
-  font-size: 13px;
-  line-height: 1.5;
-  color: var(--ink-soft);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 /* ---------- Always-visible toolbar (no hover-only controls — this needs
@@ -115,53 +160,200 @@
   border-top: 1px solid var(--line);
 }
 
-.tutorial-toolbar .tutorial-status {
-  margin-right: auto;
+/* flex: 1 (not a fixed width) — grows/shrinks with whatever room Edit and
+   Delete leave it, so a longer status label ("Confirmed" elsewhere, say)
+   can never push into them; min-width: 0 lets it actually shrink below its
+   content size instead of overflowing the toolbar. The colour now lives on
+   this wrapper (a dot + border pill) rather than a solid-filled select, so
+   it reads the same whether the value shown is short or long. */
+.tutorial-status-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  height: 36px;
+  padding: 0 10px 0 22px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--surface);
 }
 
-.tutorial-edit-btn,
-.tutorial-delete-btn {
-  padding: 8px 14px;
+.tutorial-status-dot {
+  position: absolute;
+  left: 11px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ink-faint);
+}
+
+.tutorial-status-wrap.status-active .tutorial-status-dot {
+  background: var(--good);
+}
+
+.tutorial-status-wrap select.tutorial-status {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: none;
+  padding: 0;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--ink);
+  text-transform: capitalize;
+  cursor: pointer;
+}
+
+.tutorial-edit-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  gap: 5px;
+  height: 36px;
+  padding: 0 14px;
   font-size: 12.5px;
 }
 
-.tutorial-edit-form {
+.tutorial-edit-btn svg {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+}
+
+/* Icon-only, square, same footprint as Edit's height — no label text, so
+   it can't be the thing that grows and starts the squeeze in the first
+   place. aria-label carries the name for screen readers; the red fill
+   comes from .btn-text-danger already on this button. */
+.tutorial-delete-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+}
+
+.tutorial-delete-btn svg {
+  width: 15px;
+  height: 15px;
+}
+
+/* ---------- Per-card edit overlay ---------- */
+/* Sits over just this card (`.tutorial-card` is its positioning parent),
+   never the rest of the grid — opening one card's editor can't push, hide,
+   or resize any other card, which a page-level modal or an inline panel
+   that grew the card's own height both used to do. */
+.tutorial-edit-overlay {
   display: none;
-  padding: 0 16px 16px;
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
 
-.tutorial-edit-form .long-input {
-  margin-top: 14px;
+.tutorial-edit-overlay.open {
+  display: flex;
 }
 
-.tutorial-edit-form label {
+.tutorial-edit-overlay-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tutorial-edit-overlay-head-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tutorial-edit-overlay-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  border-radius: 7px;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.tutorial-edit-overlay-icon svg {
+  width: 13px;
+  height: 13px;
+}
+
+.tutorial-edit-overlay-head .title {
+  font-weight: 800;
   font-size: 13px;
-  color: var(--ink-soft);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink);
 }
 
-.tutorial-edit-form input,
-.tutorial-edit-form textarea {
-  margin-top: 6px;
+.tutorial-edit-overlay-close {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--ink-faint);
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.tutorial-edit-overlay-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-y: auto;
+}
+
+.tutorial-edit-overlay-fields label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.tutorial-edit-overlay-fields input,
+.tutorial-edit-overlay-fields select {
   width: 100%;
   box-sizing: border-box;
-  padding: 10px 12px;
-  border: 1px solid var(--line-strong);
-  background: var(--surface-2);
-  border-radius: 6px;
+  padding: 11px 12px;
+  border: 1.5px solid var(--line-strong);
+  background: var(--surface);
+  border-radius: 10px;
   font-size: 13.5px;
   color: var(--ink);
 }
 
-.tutorial-edit-form textarea {
-  height: 90px;
-  resize: vertical;
+/* Equal-width, filling the row — the reference gives Cancel/Save the same
+   visual weight side by side rather than two small right-aligned links. */
+.tutorial-edit-overlay .operation-buttons {
+  display: flex;
+  gap: 10px;
 }
 
-.tutorial-edit-form .operation-buttons {
-  margin-top: 14px;
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
+.tutorial-edit-overlay .operation-buttons button {
+  flex: 1;
+  justify-content: center;
+  height: 44px;
+}
+
+.tutorial-edit-overlay .tutorial-edit-cancel {
+  background: var(--surface-2);
+  border: none;
+  color: var(--ink);
 }
 
 /* ---------- New Tutorial form (same field styling as reviews.css) ---------- */
@@ -230,12 +422,14 @@
   align-items: center;
 }
 
-/* Live preview under the URL field — same 9:16 embed frame as the grid
-   cards, so what the admin sees here is exactly what will render on the
-   SPA once they upload. */
+/* Live preview under the URL field — a live player rather than the grid's
+   click-to-play thumbnail, because at this point nothing is saved yet and
+   there is no stored thumbnail to show. Same 9:16 frame, so the admin can
+   see the reel is the right one before uploading. */
 .tutorial-url-preview {
   margin-top: 14px;
-  width: 240px;
+  width: 100%;
+  max-width: 300px;
 }
 
 .tutorial-url-preview iframe {

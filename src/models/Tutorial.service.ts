@@ -24,8 +24,6 @@ class TutorialService {
   /** SPA */
   public async getTutorials(inquiry: TutorialInquiry): Promise<Tutorial[]> {
     const match: T = { tutorialStatus: TutorialStatus.ACTIVE };
-    if (inquiry.tutorialCategory)
-      match.tutorialCategory = inquiry.tutorialCategory;
 
     const result = await this.tutorialModel
       .aggregate([
@@ -95,6 +93,27 @@ class TutorialService {
     input: TutorialUpdateInput,
   ): Promise<Tutorial> {
     id = shapeIntoMongooseObjectId(id);
+
+    // The link itself can be edited (not just the title/status), so if it
+    // changed, re-derive platform/embed id/thumbnail the same way creation
+    // does — otherwise the card would keep pointing at the old video.
+    if (input.tutorialUrl) {
+      const parsed = parseTutorialLink(input.tutorialUrl);
+      if (!parsed)
+        throw new Errors(HttpCode.BAD_REQUEST, Message.INVALID_TUTORIAL_LINK);
+
+      const tutorialThumbnail = await fetchTutorialThumbnail(
+        parsed,
+        input.tutorialUrl,
+      );
+
+      Object.assign(input, {
+        tutorialPlatform: parsed.platform,
+        tutorialEmbedId: parsed.embedId,
+        tutorialThumbnail,
+      });
+    }
+
     const result = await this.tutorialModel
       .findByIdAndUpdate({ _id: id }, input, { new: true })
       .exec();

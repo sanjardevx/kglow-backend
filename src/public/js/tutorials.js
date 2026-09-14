@@ -49,6 +49,146 @@ function renderTutorialPreview(url) {
 
 let previewTimer = null;
 
+/** Custom YouTube player state. We mount the official IFrame Player API
+ * with `controls: 0`, which hides ALL of YouTube's own UI (title overlay,
+ * play button, settings, CC — everything) in one shot, and drive playback
+ * ourselves with the play/pause + mute + progress bar built below. This is
+ * the only way to get rid of YouTube's title overlay — there is no
+ * embed parameter that hides just the title (the old `showinfo` param that
+ * used to do that was removed by YouTube in 2018). */
+let ytApiReady = false;
+let ytApiQueue = [];
+const ytPlayers = {};
+const ytProgressTimers = {};
+// Only one short should ever be playing — starting (or resuming) one pauses
+// whichever other mount was previously active.
+let ytActiveMountId = null;
+
+window.onYouTubeIframeAPIReady = function () {
+  ytApiReady = true;
+  ytApiQueue.forEach((fn) => fn());
+  ytApiQueue = [];
+};
+
+function withYouTubeApi(fn) {
+  if (ytApiReady && window.YT && window.YT.Player) fn();
+  else ytApiQueue.push(fn);
+}
+
+function startYouTubePlayer($btn, embedId) {
+  const mountId = `yt-mount-${embedId}-${Math.random().toString(36).slice(2, 8)}`;
+
+  // Shorts-style chrome: tap anywhere on the video to play/pause, a small
+  // round mute button in the top-right corner that opens a volume slider
+  // right underneath it (closed by default), and a bottom bar holding
+  // play/pause + the video's seek/progress bar.
+  const $wrap = $(
+    '<div class="tutorial-yt-mount-wrap">' +
+      `<div id="${mountId}" class="tutorial-yt-mount"></div>` +
+      '<button type="button" class="tutorial-yt-tap-toggle" aria-label="Play/Pause"></button>' +
+      '<div class="tutorial-yt-volume-wrap">' +
+      '<button type="button" class="tutorial-yt-mute" aria-label="Mute/Unmute">' +
+      '<svg class="icon-unmuted" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3z"></path></svg>' +
+      '<svg class="icon-muted" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M3 9v6h4l5 5V4L7 9H3z"></path><line x1="15" y1="9" x2="21" y2="15" stroke="currentColor" stroke-width="2"></line><line x1="21" y1="9" x2="15" y2="15" stroke="currentColor" stroke-width="2"></line></svg>' +
+      "</button>" +
+      '<input type="range" class="tutorial-yt-volume" min="0" max="100" value="100" aria-label="Volume" orient="vertical" />' +
+      "</div>" +
+      '<div class="tutorial-yt-bottom-controls">' +
+      '<button type="button" class="tutorial-yt-playpause" aria-label="Play/Pause">' +
+      '<svg class="icon-pause" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>' +
+      '<svg class="icon-play" viewBox="0 0 24 24" fill="currentColor" style="display:none"><polygon points="6,4 20,12 6,20"></polygon></svg>' +
+      "</button>" +
+      '<div class="tutorial-yt-progress"><div class="tutorial-yt-progress-fill"></div></div>' +
+      "</div>" +
+      "</div>",
+  );
+  $btn.replaceWith($wrap);
+
+  function pauseOtherPlayers() {
+    if (ytActiveMountId && ytActiveMountId !== mountId) {
+      const other = ytPlayers[ytActiveMountId];
+      if (other && other.pauseVideo) other.pauseVideo();
+    }
+    ytActiveMountId = mountId;
+  }
+
+  const player = new YT.Player(mountId, {
+    videoId: embedId,
+    playerVars: {
+      controls: 0,
+      autoplay: 1,
+      rel: 0,
+      modestbranding: 1,
+      iv_load_policy: 3,
+      playsinline: 1,
+      disablekb: 1,
+      fs: 0,
+    },
+    events: {
+      onReady: function (e) {
+        pauseOtherPlayers();
+        e.target.playVideo();
+        ytProgressTimers[mountId] = setInterval(() => {
+          const p = ytPlayers[mountId];
+          const duration = p && p.getDuration && p.getDuration();
+          if (!duration) return;
+          const ratio = p.getCurrentTime() / duration;
+          $wrap.find(".tutorial-yt-progress-fill").css("width", `${ratio * 100}%`);
+        }, 400);
+      },
+      onStateChange: function (e) {
+        const playing = e.data === YT.PlayerState.PLAYING;
+        if (playing) pauseOtherPlayers();
+        $wrap.find(".tutorial-yt-playpause .icon-pause").toggle(playing);
+        $wrap.find(".tutorial-yt-playpause .icon-play").toggle(!playing);
+      },
+    },
+  });
+  ytPlayers[mountId] = player;
+
+  function togglePlayPause() {
+    const p = ytPlayers[mountId];
+    if (!p) return;
+    if (p.getPlayerState() === 1) p.pauseVideo();
+    else p.playVideo();
+  }
+
+  $wrap.find(".tutorial-yt-tap-toggle, .tutorial-yt-playpause").on("click", togglePlayPause);
+
+  // Mute button just opens/closes the volume slider underneath it — the
+  // slider itself is the actual volume control (dragging it to 0 mutes,
+  // above 0 unmutes), not a plain on/off toggle.
+  $wrap.find(".tutorial-yt-mute").on("click", function () {
+    $wrap.find(".tutorial-yt-volume-wrap").toggleClass("open");
+  });
+
+  $wrap.find(".tutorial-yt-volume").on("input", function () {
+    const p = ytPlayers[mountId];
+    if (!p) return;
+    const volume = Number(this.value);
+    p.setVolume(volume);
+    if (volume === 0) p.mute();
+    else p.unMute();
+    $wrap.find(".tutorial-yt-mute .icon-unmuted").toggle(volume > 0);
+    $wrap.find(".tutorial-yt-mute .icon-muted").toggle(volume === 0);
+  });
+
+  // Closes itself once the admin lets go of the slider (the "change" event
+  // fires on release, unlike "input" which fires continuously while
+  // dragging) — no need to click the mute icon again just to dismiss it.
+  $wrap.find(".tutorial-yt-volume").on("change", function () {
+    $wrap.find(".tutorial-yt-volume-wrap").removeClass("open");
+  });
+
+  $wrap.find(".tutorial-yt-progress").on("click", function (e) {
+    const p = ytPlayers[mountId];
+    if (!p) return;
+    const rect = this.getBoundingClientRect();
+    const ratio = (e.clientX - rect.left) / rect.width;
+    p.seekTo(p.getDuration() * ratio, true);
+  });
+}
+
 $(function () {
   $("#process-btn").on("click", () => {
     $(".tutorial-container").slideToggle(500);
@@ -68,26 +208,13 @@ $(function () {
     previewTimer = setTimeout(() => renderTutorialPreview(url), 400);
   });
 
-  /** Click-to-play: swap the thumbnail button for the real YouTube iframe
-   * only once the admin actually wants to watch it. Built with .attr()
-   * rather than a template-literal string so a title containing a quote
-   * character can't break out of an attribute. */
+  /** Click-to-play: swap the thumbnail button for our custom-controlled
+   * YouTube player (controls: 0 — no native title/UI at all) only once the
+   * admin actually wants to watch it. */
   $(".tutorial-play-btn").on("click", function () {
-    const embedId = $(this).data("embed-id");
-    const title = $(this).data("title");
-    const $iframe = $("<iframe>")
-      .attr(
-        "src",
-        `https://www.youtube.com/embed/${embedId}?autoplay=1&rel=0&modestbranding=1&iv_load_policy=3`,
-      )
-      .attr("title", title)
-      .attr("frameborder", "0")
-      .attr(
-        "allow",
-        "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture",
-      )
-      .attr("allowfullscreen", "");
-    $(this).replaceWith($iframe);
+    const $btn = $(this);
+    const embedId = $btn.data("embed-id");
+    withYouTubeApi(() => startYouTubePlayer($btn, embedId));
   });
 
   /** Status toggle — the colour now lives on the .tutorial-status-wrap

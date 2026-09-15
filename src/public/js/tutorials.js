@@ -189,7 +189,63 @@ function startYouTubePlayer($btn, embedId) {
   });
 }
 
+/**
+ * Narrows a product <select> to one brand. Options are rebuilt from a cached
+ * copy rather than hidden in place, because `display:none` / `hidden` on an
+ * <option> is unreliable across browsers (Safari has historically ignored
+ * both). The "no product" option always survives.
+ *
+ * `keepSelected` is the difference between the two callers. On load we must
+ * never drop the product the record is actually linked to, even if its brand
+ * disagrees with the saved brand — the editor posts whatever this select
+ * holds, so dropping it here would silently unlink the product the next time
+ * the admin saved an unrelated field. When the admin changes the brand
+ * themselves, dropping a product from the old brand is the point.
+ */
+function filterProductsByBrand($brandSelect, keepSelected) {
+  // Scope to the one form/overlay this brand select belongs to, so the
+  // create form and each card's editor never reach into each other.
+  const $productSelect = $brandSelect
+    .closest(".tutorial-container, .tutorial-edit-overlay")
+    .find(".tutorial-product-select")
+    .first();
+  if (!$productSelect.length) return;
+
+  const select = $productSelect.get(0);
+  if (!select.dataset.allOptions) {
+    select.dataset.allOptions = select.innerHTML;
+  }
+
+  const brand = $brandSelect.val();
+  const previous = $productSelect.val();
+
+  const $all = $("<select>").html(select.dataset.allOptions).find("option");
+  const kept = $all.filter(function () {
+    const optionBrand = $(this).data("brand");
+    if (!optionBrand || !brand || optionBrand === brand) return true;
+    return keepSelected && this.value === previous;
+  });
+
+  $productSelect.empty().append(kept);
+  const stillThere = $productSelect
+    .find("option")
+    .filter(function () {
+      return this.value === previous;
+    }).length;
+  if (previous && stillThere) $productSelect.val(previous);
+}
+
 $(function () {
+  // Run once on load so each edit overlay opens already narrowed to its own
+  // brand, then on every change.
+  $(".tutorial-brand-select").each(function () {
+    filterProductsByBrand($(this), true);
+  });
+
+  $(".tutorial-brand-select").on("change", function () {
+    filterProductsByBrand($(this), false);
+  });
+
   $("#process-btn").on("click", () => {
     $(".tutorial-container").slideToggle(500);
     $("#process-btn").css("display", "none");
@@ -267,10 +323,12 @@ $(function () {
     const $overlay = $(`#tutorial-edit-overlay-${id}`);
     const tutorialTitle = $overlay.find(".edit-title").val();
     const tutorialUrl = $overlay.find(".edit-url").val();
+    const tutorialBrand = $overlay.find(".edit-brand").val();
+    const tutorialProductId = $overlay.find(".edit-product").val();
     const tutorialStatus = $overlay.find(".edit-status").val();
 
-    if (!tutorialTitle || !tutorialUrl) {
-      alert("Title and video link cannot be empty!");
+    if (!tutorialTitle || !tutorialUrl || !tutorialBrand) {
+      alert("Title, video link and brand cannot be empty!");
       return;
     }
 
@@ -278,6 +336,8 @@ $(function () {
       const response = await axios.post(`/admin/tutorial/${id}`, {
         tutorialTitle,
         tutorialUrl,
+        tutorialBrand,
+        tutorialProductId,
         tutorialStatus,
       });
       if (response.data.data) {
@@ -317,9 +377,10 @@ $(function () {
 function validateTutorialForm() {
   const tutorialUrl = $("#tutorial-url-input").val();
   const tutorialTitle = $("#tutorial-title-input").val();
+  const tutorialBrand = $("#tutorial-brand-input").val();
 
-  if (!tutorialUrl || !tutorialTitle) {
-    alert("Please insert the video link and a title!");
+  if (!tutorialUrl || !tutorialTitle || !tutorialBrand) {
+    alert("Please insert the video link, a title and a brand!");
     return false;
   }
   if (!parseTutorialLinkClient(tutorialUrl)) {

@@ -28,8 +28,16 @@ const store = new MongoDBStore({
 /** 1 - CREATE THE APP **/
 const app = express();
 
+// CORS_ORIGINS — comma-separated list, e.g. for a temporary Vercel preview
+// deployed while this backend stays local (via ngrok). Always includes the
+// local dev server so `yarn dev` on the SPA keeps working untouched.
+const corsOrigins = [
+  "http://localhost:8002",
+  ...(process.env.CORS_ORIGINS?.split(",").map((origin) => origin.trim()) ?? []),
+];
+
 app.use(
-  cors({ origin: "http://localhost:8002", credentials: true }),
+  cors({ origin: corsOrigins, credentials: true }),
 ); // allows the React SPA (dev server, different port) to call this API
 app.use(express.static(path.join(__dirname, "public")));  // serves static files (images, css, js) from /public folder
 app.use("/uploads", express.static("uploads"));           // serves static files (images, css, js) from /uploads folder

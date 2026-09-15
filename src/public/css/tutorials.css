@@ -567,7 +567,8 @@
 }
 
 .tutorials-container .long-input input,
-.tutorials-container .long-input textarea {
+.tutorials-container .long-input textarea,
+.tutorials-container .long-input select {
   position: relative;
   margin-top: 10px;
   padding: 0 20px;
@@ -579,6 +580,13 @@
   border-radius: 5px;
   font-size: 15px;
   color: var(--ink-soft);
+}
+
+/* "(optional)" next to a field name — same line, quieter than the label. */
+.label-hint {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--ink-faint);
 }
 
 .tutorials-container .long-input textarea {

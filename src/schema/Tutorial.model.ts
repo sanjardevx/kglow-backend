@@ -35,6 +35,22 @@ const tutorialSchema = new Schema(
       type: String,
     },
 
+    // What the video is selling. The brand is always set and is what the
+    // storefront falls back to, because it survives the product it refers
+    // to going out of stock, being deleted, or never having been stocked in
+    // the first place (a creator may feature an item we don't carry).
+    // tutorialProductId is the precise version, set only when the admin
+    // knows exactly which item is on screen.
+    tutorialBrand: {
+      type: String,
+      required: true,
+    },
+
+    tutorialProductId: {
+      type: Schema.Types.ObjectId,
+      ref: "Product",
+    },
+
     tutorialStatus: {
       type: String,
       enum: TutorialStatus,

@@ -2,10 +2,13 @@ import { Request, Response } from "express";
 import Errors, { HttpCode, Message } from "../libs/Errors";
 import { T } from "../libs/types/common";
 import TutorialService from "../models/Tutorial.service";
+import ProductService from "../models/Product.service";
 import { AdminRequest } from "../libs/types/member";
 import { TutorialInput, TutorialInquiry } from "../libs/types/tutorial";
+import { ProductStatus } from "../libs/enums/product.enum";
 
 const tutorialService = new TutorialService();
+const productService = new ProductService();
 
 const tutorialController: T = {};
 
@@ -50,7 +53,18 @@ tutorialController.getAllTutorials = async (req: Request, res: Response) => {
     console.log("getAllTutorials");
     const data = await tutorialService.getAllTutorials();
 
-    res.render("tutorials", { tutorials: data });
+    // The form's two selects are driven by the real catalog: every brand we
+    // actually stock, and the products behind them (the brand choice
+    // narrows the product list client-side, so the admin never scrolls the
+    // whole catalog). Soft-deleted products are left out of both.
+    const products = (await productService.getAllProducts()).filter(
+      (product) => product.productStatus !== ProductStatus.DELETE,
+    );
+    const brands = [
+      ...new Set(products.map((product) => product.productBrand)),
+    ].sort((a, b) => a.localeCompare(b));
+
+    res.render("tutorials", { tutorials: data, products, brands });
   } catch (err) {
     console.log("Error on getAllTutorials", err);
     if (err instanceof Errors) res.status(err.code).json(err);

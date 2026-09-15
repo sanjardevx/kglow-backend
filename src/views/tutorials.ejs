@@ -47,6 +47,32 @@
               <input type="text" placeholder="e.g. Morning routine with Dokdo Toner" name="tutorialTitle" id="tutorial-title-input" />
             </div>
 
+            <!-- Brand is what the storefront always has to fall back on, so
+                 it's required; the product is optional and its list is
+                 filtered by the chosen brand (see tutorials.js) so the
+                 admin never scrolls the whole catalog. -->
+            <div class="long-input">
+              <label>Brand</label>
+              <select name="tutorialBrand" id="tutorial-brand-input" class="tutorial-brand-select">
+                <option value="">-- Choose brand --</option>
+                <% brands.forEach(function (brand) { %>
+                <option value="<%= brand %>"><%= brand %></option>
+                <% }) %>
+              </select>
+            </div>
+
+            <div class="long-input">
+              <label>Product <span class="label-hint">(optional — links the video straight to one item)</span></label>
+              <select name="tutorialProductId" id="tutorial-product-input" class="tutorial-product-select">
+                <option value="">-- No specific product --</option>
+                <% products.forEach(function (product) { %>
+                <option value="<%= product._id %>" data-brand="<%= product.productBrand %>">
+                  <%= product.productBrand %> — <%= product.productName %>
+                </option>
+                <% }) %>
+              </select>
+            </div>
+
             <div class="operation-buttons">
               <button class="btn-outline" id="cancel-btn" type="button">Cancel</button>
               <button type="submit" class="btn-console" id="create-btn">
@@ -144,6 +170,30 @@
                   <div>
                     <label>Video link</label>
                     <input type="text" class="edit-url" value="<%= value.tutorialUrl %>" />
+                  </div>
+                  <div>
+                    <label>Brand</label>
+                    <select class="edit-brand tutorial-brand-select">
+                      <option value="">-- Choose brand --</option>
+                      <% brands.forEach(function (brand) { %>
+                      <option value="<%= brand %>" <%= value.tutorialBrand === brand ? 'selected' : '' %>><%= brand %></option>
+                      <% }) %>
+                    </select>
+                  </div>
+                  <div>
+                    <label>Product <span class="label-hint">(optional)</span></label>
+                    <select class="edit-product tutorial-product-select">
+                      <option value="">-- No specific product --</option>
+                      <% products.forEach(function (product) { %>
+                      <option
+                        value="<%= product._id %>"
+                        data-brand="<%= product.productBrand %>"
+                        <%= String(value.tutorialProductId) === String(product._id) ? 'selected' : '' %>
+                      >
+                        <%= product.productBrand %> — <%= product.productName %>
+                      </option>
+                      <% }) %>
+                    </select>
                   </div>
                   <div>
                     <label>Status</label>

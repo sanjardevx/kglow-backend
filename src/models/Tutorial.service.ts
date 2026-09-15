@@ -1,5 +1,6 @@
 import { shapeIntoMongooseObjectId } from "../libs/config";
 import { TutorialStatus } from "../libs/enums/tutorial.enum";
+import { ProductStatus } from "../libs/enums/product.enum";
 import Errors, { HttpCode, Message } from "../libs/Errors";
 import { T } from "../libs/types/common";
 import {
@@ -25,12 +26,32 @@ class TutorialService {
   public async getTutorials(inquiry: TutorialInquiry): Promise<Tutorial[]> {
     const match: T = { tutorialStatus: TutorialStatus.ACTIVE };
 
+    // The linked product rides along so the feed can render its shop bar
+    // from one request instead of a second round trip per video. Sold-out
+    // (PAUSE) products still join — the storefront shows them with their
+    // own badge — only soft-deleted ones drop out, which leaves productData
+    // empty and the feed falls back to the brand link.
     const result = await this.tutorialModel
       .aggregate([
         { $match: match },
         { $sort: { createdAt: -1 } },
         { $skip: (inquiry.page * 1 - 1) * inquiry.limit },
         { $limit: inquiry.limit },
+        {
+          $lookup: {
+            from: "products",
+            let: { productId: "$tutorialProductId" },
+            pipeline: [
+              {
+                $match: {
+                  $expr: { $eq: ["$_id", "$$productId"] },
+                  productStatus: { $ne: ProductStatus.DELETE },
+                },
+              },
+            ],
+            as: "productData",
+          },
+        },
       ])
       .exec();
 
@@ -78,6 +99,9 @@ class TutorialService {
     try {
       return await this.tutorialModel.create({
         ...input,
+        // The form's product <select> posts "" when "no product" is chosen,
+        // and "" is not a castable ObjectId — drop the key entirely.
+        tutorialProductId: input.tutorialProductId || undefined,
         tutorialPlatform: parsed.platform,
         tutorialEmbedId: parsed.embedId,
         tutorialThumbnail,
@@ -114,8 +138,27 @@ class TutorialService {
       });
     }
 
+    // "" from the product <select> means "unlink" — Mongoose strips
+    // undefined from an update rather than clearing the field, so the only
+    // way to actually remove an existing link is an explicit $unset.
+    const update: T = { ...input };
+    let unset: T | undefined;
+    if ("tutorialProductId" in update && !update.tutorialProductId) {
+      delete update.tutorialProductId;
+      unset = { tutorialProductId: "" };
+    }
+
+    // Guard the empty case: MongoDB rejects `$set: {}`, which is what an
+    // unlink-only payload ({ tutorialProductId: "" } and nothing else)
+    // would otherwise produce.
+    const operation: T = unset
+      ? Object.keys(update).length
+        ? { $set: update, $unset: unset }
+        : { $unset: unset }
+      : update;
+
     const result = await this.tutorialModel
-      .findByIdAndUpdate({ _id: id }, input, { new: true })
+      .findByIdAndUpdate({ _id: id }, operation, { new: true })
       .exec();
     if (!result)
       throw new Errors(HttpCode.NOT_MODIFIED, Message.UPDATE_FAILED);

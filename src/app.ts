@@ -28,6 +28,13 @@ const store = new MongoDBStore({
 /** 1 - CREATE THE APP **/
 const app = express();
 
+// A reverse proxy (Railway, Vercel, etc.) terminates HTTPS itself and talks
+// plain HTTP to this server — without this, Express sees every request as
+// insecure and silently refuses to set the `secure: true` session cookie
+// below at all. `trust proxy` makes it read the proxy's X-Forwarded-Proto
+// header instead of the raw (local, HTTP) connection.
+app.set("trust proxy", 1);
+
 // CORS_ORIGINS — comma-separated list, e.g. for a temporary Vercel preview
 // deployed while this backend stays local (via ngrok). Always includes the
 // local dev server so `yarn dev` on the SPA keeps working untouched.
@@ -47,21 +54,37 @@ app.use(cookieParser());                                  // lets express read c
 app.use(morgan(MORGAN_FORMAT));                           // logs every request in terminal (method, url, status, time)
 
 
-/** 2 - SESSIONS **/
+/** 2 - SESSIONS (admin panel only) **/
+// Mounted on /admin rather than globally: the SPA authenticates with a JWT and
+// never reads req.session, so a global mount meant every anonymous shop
+// visitor — every product listing, every page view — created and wrote a
+// session document to MongoDB. Scoped here, only the handful of admin requests
+// touch the store. `saveUninitialized: false` then stops even a visitor who
+// merely lands on the admin login page from leaving a row behind; admin login
+// sets req.session.member and calls save() explicitly, so it is unaffected.
+// `resave: true` stays, because it is what keeps an active admin's 6h session
+// sliding forward instead of expiring mid-shift.
 app.use(
+  "/admin",
   session({
     secret: String(process.env.SESSION_SECRET),
     cookie: {
       maxAge: 1000 * 3600 * 6,       // cookies will be active 6h
+      // The admin panel is served by this same server, so its cookie is
+      // first-party and "lax" is enough — no third-party-cookie blocking to
+      // work around here. `secure: true` still works on http://localhost
+      // (browsers treat it as a trustworthy origin), so local dev is fine.
+      sameSite: "lax",
+      secure: true,
     },
     store: store,
     resave: true,                   // save session every request (false = save only when changed)
-    saveUninitialized: true,
+    saveUninitialized: false,
   }),
 );
 
 
-app.use(function (req, res, next) {
+app.use("/admin", function (req, res, next) {
   const sessionInstance = req.session as T;
   res.locals.member = sessionInstance.member;
   next();

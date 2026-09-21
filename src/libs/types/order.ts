@@ -15,12 +15,16 @@ export interface OrderItem {
 
 export interface Order {
   _id: ObjectId;
+  orderSubtotal: number;
+  orderDiscountPercent: number;
+  orderDiscount: number;
   orderTotal: number;
   orderDelivery: number;
   orderStatus: OrderStatus;
   deliveryAddress?: string;
   paymentProof?: string[];
   transferNote?: string;
+  rejectReason?: string;
   memberId: ObjectId;
   createdAt: Date;
   updatedAt: Date;
@@ -53,4 +57,5 @@ export interface OrderInquiry {
 export interface OrderUpdateInput {
   orderId: string;
   orderStatus: OrderStatus;
+  rejectReason?: string;
 }

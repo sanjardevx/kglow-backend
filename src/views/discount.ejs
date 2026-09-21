@@ -1,0 +1,104 @@
+<%- include('includes/header') %>
+
+<link rel="stylesheet" type="text/css" href="/css/discount.css" />
+
+<body>
+  <div class="discount-container">
+    <%- include('includes/nav', { active: 'discount' }) %>
+
+    <div class="body-pad">
+      <div class="discount-frame">
+        <div class="board">
+          <div class="section-head">
+            <div class="section-title">Discount</div>
+            <span
+              class="state-pill <%= settings.discountIsActive && settings.discountPercent > 0 ? 'on' : 'off' %>"
+              id="state-pill"
+            >
+              <%= settings.discountIsActive && settings.discountPercent > 0 ? 'SALE IS ON' : 'SALE IS OFF' %>
+            </span>
+          </div>
+
+          <form
+            action="/admin/discount/update"
+            method="POST"
+            class="discount-form"
+          >
+            <p class="discount-note">
+              One sale runs at a time, and it comes off the basket total — not
+              off individual products. Shoppers see it on the shop banner and
+              again at checkout. Switch it off here the day it ends.
+            </p>
+
+            <!-- First field on the page on purpose: ending a sale on time is
+                 what the admin comes here to do far more often than starting
+                 one. -->
+            <div class="long-input switch-row">
+              <label class="switch">
+                <input
+                  type="checkbox"
+                  name="discountIsActive"
+                  id="active-input"
+                  <%= settings.discountIsActive ? 'checked' : '' %>
+                />
+                <span>Run the sale</span>
+              </label>
+            </div>
+
+            <div class="long-input">
+              <label>Discount percent</label>
+              <input
+                type="number"
+                name="discountPercent"
+                id="percent-input"
+                min="0"
+                max="100"
+                step="1"
+                value="<%= settings.discountPercent %>"
+                autocomplete="off"
+              />
+            </div>
+
+            <div class="long-input">
+              <label>
+                Last day
+                <span class="label-hint">
+                  (optional — leave empty to run until you switch it off)
+                </span>
+              </label>
+              <input
+                type="date"
+                name="discountEndsOn"
+                value="<%= settings.discountEndsOn %>"
+              />
+            </div>
+
+            <div class="long-input">
+              <label>
+                Name
+                <span class="label-hint">
+                  (optional — shown on the shop banner, e.g. Autumn Sale)
+                </span>
+              </label>
+              <input
+                type="text"
+                name="discountLabel"
+                value="<%= settings.discountLabel %>"
+                maxlength="40"
+                autocomplete="off"
+              />
+            </div>
+
+            <div class="discount-preview off" id="preview"></div>
+
+            <div class="long-input">
+              <button class="btn-console" type="submit">Save</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script src="/js/discount.js"></script>
+  </div>
+</body>

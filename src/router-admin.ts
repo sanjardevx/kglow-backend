@@ -12,6 +12,7 @@ import productController from "./controllers/product.controller";
 import orderController from "./controllers/order.controller";
 import reviewController from "./controllers/review.controller";
 import tutorialController from "./controllers/tutorial.controller";
+import discountController from "./controllers/discount.controller";
 import makeUploader from "./libs/utils/uploader";
 
 /** Auth / session **/
@@ -43,10 +44,18 @@ routerAdmin.post(
   makeUploader("products").array("productImages", 5),
   productController.createNewProduct,
 );
+// Kept JSON-only: the inline status/stock controls in the table post here.
 routerAdmin.post(
   "/product/:id",
   adminController.verifyAdvisor,
   productController.updateChosenProduct,
+);
+// The drawer's full edit, which also carries image files.
+routerAdmin.post(
+  "/product/:id/edit",
+  adminController.verifyAdvisor,
+  makeUploader("products").array("productImages", 5),
+  productController.editChosenProduct,
 );
 
 /** Review routes  **/
@@ -88,6 +97,19 @@ routerAdmin.delete(
   "/tutorial/:id",
   adminController.verifyAdvisor,
   tutorialController.deleteTutorial,
+);
+
+/** Discount routes **/
+// urlencoded form, no uploader — one row of settings for the running sale
+routerAdmin.get(
+  "/discount",
+  adminController.verifyAdvisor,
+  discountController.getDiscountPage,
+);
+routerAdmin.post(
+  "/discount/update",
+  adminController.verifyAdvisor,
+  discountController.updateDiscount,
 );
 
 /** Order routes **/

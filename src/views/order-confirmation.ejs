@@ -32,7 +32,12 @@
                     <td class="cell-soft"><%= key + 1 %></td>
                     <td class="cell-strong"><%= value.memberData[0] ? value.memberData[0].memberNick : '-' %></td>
                     <td class="cell-soft"><%= value.memberData[0] ? value.memberData[0].memberPhone : '-' %></td>
-                    <td class="cell-strong"><%= value.orderTotal.toLocaleString('en-US') %></td>
+                    <td class="cell-strong">
+                      <%= value.orderTotal.toLocaleString('en-US') %>
+                      <% if (value.orderDiscount) { %>
+                      <span class="sale-chip">&minus;<%= value.orderDiscountPercent %>%</span>
+                      <% } %>
+                    </td>
                     <td>
                       <span class="status-pill status-<%= value.orderStatus.toLowerCase() %>">
                         <%= value.orderStatus %>
@@ -85,6 +90,18 @@
               <span>Total</span>
               <span><%= value.orderTotal.toLocaleString('en-US') %></span>
             </div>
+            <!-- The transferred amount stays the headline figure: it is what
+                 gets matched against the bank screenshot, and leading with
+                 the pre-discount price is how a valid order gets rejected.
+                 The original sits underneath as the explanation. Orders from
+                 before the sale existed carry no discount and show nothing. -->
+            <% if (value.orderDiscount) { %>
+            <div class="total-note">
+              <%= value.orderSubtotal.toLocaleString('en-US') %>
+              &minus; <%= value.orderDiscountPercent %>%
+              (<%= value.orderDiscount.toLocaleString('en-US') %>)
+            </div>
+            <% } %>
           </div>
 
           <div class="card">
@@ -105,9 +122,32 @@
           <% } %>
 
           <% if (value.orderStatus === 'WAITING_CONFIRMATION') { %>
-          <div class="decision-row">
+          <div class="decision-row" id="decision-<%= value._id %>">
             <button class="btn-console confirm-btn" id="confirm-<%= value._id %>" type="button">Confirm</button>
             <button class="btn-text-danger reject-btn" id="reject-<%= value._id %>" type="button">Reject</button>
+          </div>
+
+          <!-- Opens in place of the buttons rather than as a second modal on
+               top of this one — the reason is part of rejecting, not a
+               separate decision. -->
+          <div class="reject-box" id="reject-box-<%= value._id %>">
+            <label>Why is this order being rejected?</label>
+            <textarea
+              class="reject-reason-input"
+              rows="3"
+              placeholder="e.g. The payment screenshot doesn't match the order total."
+            ></textarea>
+            <div class="reject-box-actions">
+              <button class="btn-outline reject-cancel" type="button" data-order="<%= value._id %>">Cancel</button>
+              <button class="btn-text-danger reject-submit" type="button" data-order="<%= value._id %>">Reject order</button>
+            </div>
+          </div>
+          <% } %>
+
+          <% if (value.orderStatus === 'REJECTED' && value.rejectReason) { %>
+          <div class="card">
+            <div class="label">Rejection reason</div>
+            <div class="sub"><%= value.rejectReason %></div>
           </div>
           <% } %>
         </div>

@@ -20,11 +20,20 @@ export enum Message {
   USED_NICK_PHONE = "You are inserting already used nick or phone!",
   TOKEN_CREATION_FAILED = "Token creation failed!",
   NO_MEMBER_NICK = "No member with that member nick",
-  BLOCKED_USER = "You have been blocked, contact the resturant!",
+  BLOCKED_USER = "You have been blocked, contact the admin!",
   WRONG_PASSWORD = "Wrong password, please try again!",
   NOT_AUTHENTICATED = "You are not authenticated, please login first!",
 
   INVALID_TUTORIAL_LINK = "Please paste a valid YouTube or Instagram link!",
+
+  REJECT_NEEDS_REASON = "Please write why this order is being rejected!",
+  PRODUCT_NEEDS_IMAGE = "A product needs at least one image!",
+  DUPLICATE_PRODUCT = "A product with this brand, name and volume already exists!",
+  INVALID_PRODUCT_NUMBERS = "Price and stock cannot be negative!",
+
+  INVALID_DISCOUNT_PERCENT = "The discount must be between 0 and 100!",
+  INVALID_DISCOUNT_DATE = "Please pick a valid end date!",
+  PRODUCT_UNAVAILABLE = "One of the products is no longer available!",
 }
 
 // Custom error class — combines an HTTP code + a message into one object

@@ -3,6 +3,27 @@ import { OrderStatus } from "../libs/enums/order.enum";
 
 const orderSchema = new Schema(
   {
+    /**
+     * Stored together: subtotal - discount + delivery = total. Keeping only
+     * the total leaves an order unexplainable once the percentage changes,
+     * and the admin reconciles these against a bank transfer.
+     */
+    orderSubtotal: {
+      type: Number,
+      default: 0,
+    },
+
+    /** What was running when the order was placed, not what runs today. */
+    orderDiscountPercent: {
+      type: Number,
+      default: 0,
+    },
+
+    orderDiscount: {
+      type: Number,
+      default: 0,
+    },
+
     orderTotal: {
       type: Number,
       required: true,
@@ -28,6 +49,12 @@ const orderSchema = new Schema(
     },
 
     transferNote: {
+      type: String,
+    },
+
+    // Written by the admin when rejecting, and shown to the shopper on the
+    // order itself — otherwise a rejection arrives with no explanation.
+    rejectReason: {
       type: String,
     },
 

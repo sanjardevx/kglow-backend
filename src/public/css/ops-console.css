@@ -400,6 +400,30 @@
   font-size: 14px;
 }
 
+/* Sits under the total and explains it: the pre-discount price and what came
+   off. Quiet on purpose — the number above is the one being reconciled. */
+.total-note {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-faint);
+}
+
+/* Marks a discounted order in the list, so a total that looks low against the
+   products in it is explained at a glance. */
+.sale-chip {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--good-soft);
+  color: var(--good);
+  font-size: 11px;
+  font-weight: 700;
+}
+
 .order-detail {
   display: grid;
   grid-template-columns: 1.3fr 1fr;

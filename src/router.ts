@@ -13,6 +13,7 @@ import uploader from "./libs/utils/uploader";
 import orderController from "./controllers/order.controller";
 import reviewController from "./controllers/review.controller";
 import tutorialController from "./controllers/tutorial.controller";
+import discountController from "./controllers/discount.controller";
 
 //** Member **/
 // router.get("/member/check-me", memberController.checkAuthSession);
@@ -51,6 +52,11 @@ router.get("/review/product/:productId", reviewController.getProductReviews);
 //** Tutorial **/
 router.get("/tutorial/all", tutorialController.getTutorials);
 router.get("/tutorial/:id", tutorialController.getTutorial);
+
+//** Discount **/
+// Open: the storefront reads the running sale before anyone signs in, so the
+// banner and the basket can quote the same number the checkout will apply.
+router.get("/discount/active", discountController.getActiveDiscount);
 
 //** Order **/
 router.post(

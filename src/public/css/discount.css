@@ -1,0 +1,141 @@
+/* Admin → Discount. One short form, so it borrows the form styling the other
+   admin pages use rather than inventing a second look. */
+
+.discount-container .discount-frame {
+  position: relative;
+  padding-bottom: 80px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.discount-container .discount-frame .board {
+  position: relative;
+  width: 720px;
+  display: flex;
+  flex-direction: column;
+}
+
+.discount-form {
+  width: 100%;
+  padding: 28px 30px 34px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.discount-note {
+  margin: 0;
+  font-size: 14px;
+  line-height: 22px;
+  color: var(--ink-soft);
+}
+
+.discount-container .long-input {
+  position: relative;
+  margin-top: 25px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.discount-container .long-input label {
+  font-size: 16px;
+  line-height: 25px;
+  color: var(--ink);
+}
+
+.discount-container .long-input input[type="number"],
+.discount-container .long-input input[type="text"],
+.discount-container .long-input input[type="date"] {
+  position: relative;
+  margin-top: 10px;
+  padding: 0 20px;
+  width: 100%;
+  height: 54px;
+  box-sizing: border-box;
+  border: 1px solid var(--line-strong);
+  background: var(--surface-2);
+  border-radius: 5px;
+  font-size: 15px;
+  color: var(--ink-soft);
+}
+
+.label-hint {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--ink-faint);
+}
+
+/* The switch is the field that matters most on this page — ending a sale on
+   time is what the admin comes here to do — so it sits in a tinted row
+   instead of looking like one more text field. */
+.switch-row {
+  margin-top: 22px;
+  padding: 16px 18px;
+  background: var(--accent-soft);
+  border-radius: 6px;
+}
+
+.switch-row .switch {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.switch-row input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+/* States the effect in money rather than in percent: a mistyped 100 reads as
+   "pays 0 so'm", which is hard to save by accident. */
+.discount-preview {
+  margin-top: 24px;
+  padding: 14px 18px;
+  border-radius: 6px;
+  font-size: 15px;
+  line-height: 22px;
+}
+
+.discount-preview.on {
+  background: var(--good-soft);
+  color: var(--good);
+}
+
+.discount-preview.off {
+  background: var(--surface-2);
+  color: var(--ink-soft);
+}
+
+.state-pill {
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.state-pill.on {
+  background: var(--good-soft);
+  color: var(--good);
+}
+
+.state-pill.off {
+  background: var(--surface-2);
+  color: var(--ink-faint);
+}
+
+@media (max-width: 860px) {
+  .discount-container .discount-frame .board {
+    width: 100%;
+    padding: 0 20px;
+  }
+}

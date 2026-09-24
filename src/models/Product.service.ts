@@ -1,3 +1,5 @@
+import fs from "fs/promises";
+import path from "path";
 import { shapeIntoMongooseObjectId } from "../libs/config";
 import { ProductStatus } from "../libs/enums/product.enum";
 import { ObjectId } from "mongoose";
@@ -134,6 +136,57 @@ class ProductService {
     if (!result) throw new Errors(HttpCode.NOT_MODIFIED, Message.UPDATE_FAILED);
 
     return result;
+  }
+
+  /**
+   * Full edit from the admin drawer. `keptImages` is what the admin left in
+   * place; it is filtered against what the product actually holds, so a
+   * tampered request can never write an arbitrary path into the record.
+   */
+  public async editChosenProduct(
+    id: string,
+    input: ProductUpdateInput,
+    keptImages: string[],
+    newImagePaths: string[],
+  ): Promise<Product> {
+    const objectId = shapeIntoMongooseObjectId(id);
+
+    const previous = await this.productModel.findById(objectId).exec();
+    if (!previous) throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
+
+    const kept: string[] = previous.productImages.filter((image: string) =>
+      keptImages.includes(image),
+    );
+    const productImages = [...kept, ...newImagePaths];
+    if (!productImages.length)
+      throw new Errors(HttpCode.BAD_REQUEST, Message.PRODUCT_NEEDS_IMAGE);
+
+    const result = await this.productModel
+      .findByIdAndUpdate(
+        { _id: objectId },
+        { ...input, productImages },
+        { new: true },
+      )
+      .exec();
+    if (!result) throw new Errors(HttpCode.NOT_MODIFIED, Message.UPDATE_FAILED);
+
+    // Only once the row is safely updated: an orphaned file is harmless, but
+    // a deleted file with a record still pointing at it is a broken image.
+    const dropped = previous.productImages.filter(
+      (image: string) => !productImages.includes(image),
+    );
+    await Promise.all(dropped.map((image: string) => this.removeImageFile(image)));
+
+    return result;
+  }
+
+  private async removeImageFile(imagePath: string): Promise<void> {
+    try {
+      await fs.unlink(path.resolve(imagePath));
+    } catch (err) {
+      // Already gone, or never written — neither should fail the update.
+      console.log("Could not remove image file:", imagePath);
+    }
   }
 }
 export default ProductService;

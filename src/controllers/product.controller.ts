@@ -110,4 +110,43 @@ productController.updateChosenProduct = async (req: Request, res: Response) => {
   }
 };
 
+productController.editChosenProduct = async (
+  req: AdminRequest,
+  res: Response,
+) => {
+  try {
+    console.log("editChosenProduct");
+    const id = req.params.id;
+
+    // multipart can't carry an array natively, so the drawer sends the paths
+    // it kept as a JSON string alongside whatever files it uploaded.
+    const { keptImages, ...input } = req.body;
+    const kept: string[] = keptImages ? JSON.parse(keptImages) : [];
+    const newImagePaths = (req.files ?? []).map((file) => file.path);
+
+    if (Number(input.productPrice) < 0 || Number(input.productLeftCount) < 0)
+      throw new Errors(HttpCode.BAD_REQUEST, Message.INVALID_PRODUCT_NUMBERS);
+
+    const result = await productService.editChosenProduct(
+      id,
+      input,
+      kept,
+      newImagePaths,
+    );
+
+    res.status(HttpCode.OK).json({ data: result });
+  } catch (err) {
+    console.log("Error on editChosenProduct", err);
+    // brand + name + volume is a unique index, so a rename can collide —
+    // that reads as a plain 500 unless it's translated here.
+    if ((err as { code?: number }).code === 11000)
+      res.status(HttpCode.BAD_REQUEST).json({
+        code: HttpCode.BAD_REQUEST,
+        message: Message.DUPLICATE_PRODUCT,
+      });
+    else if (err instanceof Errors) res.status(err.code).json(err);
+    else res.status(Errors.standart.code).json(Errors.standart);
+  }
+};
+
 export default productController;

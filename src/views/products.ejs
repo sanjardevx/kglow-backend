@@ -22,10 +22,11 @@
                   <th style="width: 24%">Name</th>
                   <th style="width: 14%">Brand</th>
                   <th style="width: 12%">Category</th>
-                  <th style="width: 9%">Volume</th>
-                  <th style="width: 11%">Price</th>
-                  <th style="width: 7%">Left</th>
+                  <th style="width: 8%">Volume</th>
+                  <th style="width: 10%">Price</th>
+                  <th style="width: 6%">Left</th>
                   <th style="width: 10%">Status</th>
+                  <th style="width: 7%"></th>
                 </tr>
               </thead>
               <tbody>
@@ -58,6 +59,17 @@
                       <option value="DELETE"
                         <%= value.productStatus === 'DELETE' ? 'selected' : '' %> >Delete</option>
                     </select>
+                  </td>
+                  <td>
+                    <button
+                      class="btn-outline product-edit-btn"
+                      type="button"
+                      data-id="<%= value._id %>"
+                      aria-label="Edit"
+                      title="Edit"
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>
+                    </button>
                   </td>
                 </tr>
                 <% }) %>
@@ -209,6 +221,82 @@
       </div>
     </div>
   </div>
+
+  <!-- One shared drawer, filled in by JS from the JSON block below — the
+       table stays visible beside it, so the admin never loses their place.
+       A per-row overlay isn't an option here: absolutely-positioned boxes
+       inside <tr>/<td> don't lay out reliably. -->
+  <div class="drawer-backdrop" id="drawer-backdrop"></div>
+  <aside class="product-drawer" id="product-drawer">
+    <div class="drawer-head">
+      <span class="drawer-title">Edit product</span>
+      <button class="drawer-close" id="drawer-close" type="button" aria-label="Close">&times;</button>
+    </div>
+
+    <div class="drawer-body">
+      <div class="drawer-field">
+        <label>Images <span class="label-hint">(the first one is the main photo)</span></label>
+        <div class="drawer-media" id="drawer-media"></div>
+      </div>
+
+      <div class="drawer-field">
+        <label>Name</label>
+        <input type="text" id="edit-name" />
+      </div>
+
+      <div class="drawer-row">
+        <div class="drawer-field">
+          <label>Brand</label>
+          <input type="text" id="edit-brand" />
+        </div>
+        <div class="drawer-field">
+          <label>Category</label>
+          <select id="edit-category">
+            <option value="SKINCARE">Skincare</option>
+            <option value="MAKEUP">Makeup</option>
+            <option value="SETS">Sets</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="drawer-row">
+        <div class="drawer-field">
+          <label>Volume</label>
+          <input type="text" id="edit-volume" placeholder="e.g. 50ml" />
+        </div>
+        <div class="drawer-field">
+          <label>Status</label>
+          <select id="edit-status">
+            <option value="PAUSE">Pause</option>
+            <option value="PROCESS">Process</option>
+            <option value="DELETE">Delete</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="drawer-row">
+        <div class="drawer-field">
+          <label>Price</label>
+          <input type="number" min="0" id="edit-price" />
+        </div>
+        <div class="drawer-field">
+          <label>Left</label>
+          <input type="number" min="0" id="edit-left" />
+        </div>
+      </div>
+    </div>
+
+    <div class="drawer-foot">
+      <button class="btn-outline" id="drawer-cancel" type="button">Cancel</button>
+      <button class="btn-console" id="drawer-save" type="button">Save</button>
+    </div>
+  </aside>
+
+  <!-- `<` is escaped so a product name containing "</script>" can't close
+       this block early. -->
+  <script id="products-data" type="application/json">
+    <%- JSON.stringify(products).replace(/</g, "\\u003c") %>
+  </script>
 
   <script type="text/javascript" src="/js/products.js"></script>
 </body>

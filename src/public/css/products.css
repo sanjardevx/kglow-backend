@@ -262,3 +262,214 @@
   align-items: center;
 }
 
+/* ---------- Row action ---------- */
+
+/* Icon only — the pencil carries the meaning, and aria-label/title keep it
+   readable for screen readers and on hover. */
+.product-edit-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+}
+
+.product-edit-btn svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+/* ---------- Edit drawer ---------- */
+
+.drawer-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: rgba(15, 23, 42, 0.35);
+}
+
+.drawer-backdrop.open {
+  display: block;
+}
+
+/* Slides in from the right instead of covering the table, so the list the
+   admin was reading stays where it was. */
+.product-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 50;
+  width: 460px;
+  max-width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  box-shadow: -8px 0 28px rgba(15, 23, 42, 0.14);
+  transform: translateX(100%);
+  transition: transform 0.25s ease;
+}
+
+.product-drawer.open {
+  transform: translateX(0);
+}
+
+.drawer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.drawer-title {
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.drawer-close {
+  padding: 0;
+  border: none;
+  background: none;
+  font-size: 22px;
+  line-height: 1;
+  color: var(--ink-faint);
+  cursor: pointer;
+}
+
+/* The body scrolls on its own so the Save row is always reachable. */
+.drawer-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.drawer-row {
+  display: flex;
+  gap: 12px;
+}
+
+.drawer-row .drawer-field {
+  flex: 1;
+  min-width: 0;
+}
+
+.drawer-field label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.drawer-field .label-hint {
+  font-weight: 400;
+  color: var(--ink-faint);
+}
+
+.drawer-field input,
+.drawer-field select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 11px 12px;
+  border: 1.5px solid var(--line-strong);
+  border-radius: 10px;
+  background: var(--surface);
+  font-size: 13.5px;
+  color: var(--ink);
+}
+
+.drawer-media {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+
+.drawer-slot {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--surface-2);
+  border: 1.5px dashed var(--line-strong);
+}
+
+.drawer-slot.filled {
+  border-style: solid;
+}
+
+.drawer-slot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.drawer-slot-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: 20px;
+  color: var(--ink-faint);
+}
+
+.drawer-slot input[type="file"] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* Above the file input, otherwise the invisible input swallows the click. */
+.drawer-slot-remove {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--hard);
+  color: #fff;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.drawer-foot {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+  padding: 16px 20px;
+  border-top: 1px solid var(--line);
+}
+
+.drawer-foot button {
+  flex: 1;
+  justify-content: center;
+  height: 44px;
+}
+
+.drawer-foot button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+

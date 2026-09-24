@@ -35,22 +35,45 @@ $(function () {
     }
   });
 
-  $(".reject-btn").on("click", async function (e) {
-    const id = e.target.id;
-    const orderId = id.replace("reject-", "");
-    if (!confirm("Reject this order?")) return;
+  /** Reject asks for a reason first: the shopper sees it on their order, so
+   * rejecting without one is what this replaced. */
+  $(".reject-btn").on("click", function (e) {
+    const orderId = e.target.id.replace("reject-", "");
+    $(`#decision-${orderId}`).hide();
+    $(`#reject-box-${orderId}`).addClass("open").find("textarea").focus();
+  });
 
+  $(".reject-cancel").on("click", function () {
+    const orderId = $(this).data("order");
+    $(`#reject-box-${orderId}`).removeClass("open").find("textarea").val("");
+    $(`#decision-${orderId}`).show();
+  });
+
+  $(".reject-submit").on("click", async function () {
+    const orderId = $(this).data("order");
+    const $box = $(`#reject-box-${orderId}`);
+    const rejectReason = $box.find("textarea").val().trim();
+
+    if (!rejectReason) {
+      alert("Please write why this order is being rejected!");
+      return;
+    }
+
+    const $submit = $(this).prop("disabled", true);
     try {
       const response = await axios.post("/admin/order/update", {
         orderId: orderId,
         orderStatus: "REJECTED",
+        rejectReason: rejectReason,
       });
       if (response.data.data) {
         location.reload();
       } else alert("Order update failed!");
     } catch (err) {
       console.log(err);
-      alert("Order update failed!");
+      alert(err.response?.data?.message || "Order update failed!");
+    } finally {
+      $submit.prop("disabled", false);
     }
   });
 });

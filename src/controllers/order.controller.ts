@@ -1,4 +1,4 @@
-import Errors, { HttpCode } from "../libs/Errors";
+import Errors, { HttpCode, Message } from "../libs/Errors";
 import { T } from "../libs/types/common";
 import { ExtendenRequest } from "../libs/types/member";
 import { Request, Response } from "express";
@@ -79,8 +79,18 @@ orderController.getAllOrders = async (req: Request, res: Response) => {
 orderController.updateOrderStatus = async (req: Request, res: Response) => {
   try {
     console.log("updateOrderStatus");
-    const { orderId, orderStatus } = req.body;
-    const result = await orderService.updateOrderStatus(orderId, orderStatus);
+    const { orderId, orderStatus, rejectReason } = req.body;
+
+    // A rejection with no explanation is exactly what this feature exists to
+    // fix, so the reason is required on that path and ignored on the others.
+    if (orderStatus === OrderStatus.REJECTED && !rejectReason?.trim())
+      throw new Errors(HttpCode.BAD_REQUEST, Message.REJECT_NEEDS_REASON);
+
+    const result = await orderService.updateOrderStatus(
+      orderId,
+      orderStatus,
+      rejectReason?.trim(),
+    );
     res.status(HttpCode.OK).json({ data: result });
   } catch (err) {
     console.log("Error on updateOrderStatus", err);

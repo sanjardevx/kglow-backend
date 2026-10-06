@@ -78,7 +78,7 @@ class MemberService {
 
   public async updateMember(
     member: Member,
-    input: MemberUpdateInput,
+    input: Partial<MemberUpdateInput>,
   ): Promise<Member> {
     const memberId = shapeIntoMongooseObjectId(member._id);
     const result = await this.memberModel
@@ -147,7 +147,9 @@ class MemberService {
   public async processLogin(input: LoginInput): Promise<Member> {
     const member = await this.memberModel
       .findOne(
-        { memberNick: input.memberNick },
+        // Only an advisor can sign in here: a shopper's correct password must
+        // never open the admin panel.
+        { memberNick: input.memberNick, memberType: MemberType.ADVISOR },
         { memberNick: 1, memberPassword: 1 },
       )
       .exec();

@@ -11,6 +11,7 @@ import {
 import Errors, { HttpCode, Message } from "../libs/Errors";
 import AuthService from "../models/Auth.service";
 import { AUTH_TIMER } from "../libs/config";
+import { MemberType } from "../libs/enums/member.enum";
 
 const memberService = new MemberService();
 const authService = new AuthService();
@@ -38,7 +39,16 @@ function extractToken(req: ExtendenRequest): string | undefined {
 memberController.signup = async (req: Request, res: Response) => {
   try {
     console.log("signup");
-    const input: MemberInput = req.body,
+    // Only what the signup form actually asks for. Type, status and points
+    // are the server's to decide: passing the whole body through let anyone
+    // sign up as an ADVISOR and walk straight into the admin panel.
+    const { memberNick, memberPhone, memberPassword } = req.body;
+    const input: MemberInput = {
+        memberNick,
+        memberPhone,
+        memberPassword,
+        memberType: MemberType.USER,
+      },
       result: Member = await memberService.signup(input);
     const token = await authService.createToken(result);
 
@@ -118,7 +128,15 @@ memberController.getMemberDetails = async (
 memberController.updateMember = async (req: ExtendenRequest, res: Response) => {
   try {
     console.log("updateMember");
-    const input: MemberUpdateInput = req.body;
+    // Same reasoning as signup: a shopper edits their own profile, never their
+    // type, status, points or password (which would be saved unhashed).
+    const { memberNick, memberPhone, memberAddress, memberDesc } = req.body;
+    const input: Partial<MemberUpdateInput> = {
+      memberNick,
+      memberPhone,
+      memberAddress,
+      memberDesc,
+    };
     if (req.file) input.memberImage = req.file.path;
 
     const result = await memberService.updateMember(req.member, input);

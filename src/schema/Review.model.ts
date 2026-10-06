@@ -39,4 +39,7 @@ const reviewSchema = new Schema(
   { timestamps: true },
 );
 
-export default mongoose.model("Review", reviewSchema);
+// Untyped on purpose: mongoose 6.13 infers document types the services'
+// interfaces don't match yet (their ObjectId is the schema type). Kept as
+// loose as 6.2 was until those interfaces are corrected.
+export default mongoose.model<any>("Review", reviewSchema);

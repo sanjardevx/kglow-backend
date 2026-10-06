@@ -56,4 +56,7 @@ const memberSchema = new Schema(
 );
 
 // export the model so other files can use it to query MongoDB
-export default mongoose.model("Member", memberSchema);
+// Untyped on purpose: mongoose 6.13 infers document types the services'
+// interfaces don't match yet (their ObjectId is the schema type). Kept as
+// loose as 6.2 was until those interfaces are corrected.
+export default mongoose.model<any>("Member", memberSchema);

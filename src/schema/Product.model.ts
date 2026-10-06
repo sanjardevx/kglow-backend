@@ -69,4 +69,7 @@ productSchema.index(
   { productBrand: 1, productName: 1, productVolume: 1 },
   { unique: true },
 );
-export default mongoose.model("Product", productSchema);
+// Untyped on purpose: mongoose 6.13 infers document types the services'
+// interfaces don't match yet (their ObjectId is the schema type). Kept as
+// loose as 6.2 was until those interfaces are corrected.
+export default mongoose.model<any>("Product", productSchema);

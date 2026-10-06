@@ -1,0 +1,50 @@
+import { Request, Response } from "express";
+import { rateLimit } from "express-rate-limit";
+import Errors, { HttpCode, Message } from "../Errors";
+
+const MINUTE = 60 * 1000;
+
+const tooMany = new Errors(HttpCode.TOO_MANY_REQUESTS, Message.TOO_MANY_ATTEMPTS);
+
+/**
+ * Counted per IP. Mobile carriers put many shoppers behind one address, so
+ * the shop login only counts failed attempts: someone typing their own
+ * password right never gets near the limit, a password-guessing script does.
+ */
+export const loginLimiter = rateLimit({
+  windowMs: 15 * MINUTE,
+  limit: 10,
+  skipSuccessfulRequests: true,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  message: tooMany,
+});
+
+// Every signup counts — this is what stops a script filling the members list.
+export const signupLimiter = rateLimit({
+  windowMs: 60 * MINUTE,
+  limit: 20,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  message: tooMany,
+});
+
+/**
+ * The admin forms answer a wrong password with a 200 and an alert, so there
+ * is no failure status to count on — every attempt counts instead, which one
+ * advisor never comes close to. Answered in the same alert-and-return style
+ * the login page already uses.
+ */
+export const adminAuthLimiter = rateLimit({
+  windowMs: 15 * MINUTE,
+  limit: 10,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  handler: (req: Request, res: Response) => {
+    res
+      .status(HttpCode.TOO_MANY_REQUESTS)
+      .send(
+        `<script>alert("${Message.TOO_MANY_ATTEMPTS}"); window.location.replace('/admin/login') </script>`,
+      );
+  },
+});

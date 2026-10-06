@@ -14,11 +14,12 @@ import orderController from "./controllers/order.controller";
 import reviewController from "./controllers/review.controller";
 import tutorialController from "./controllers/tutorial.controller";
 import discountController from "./controllers/discount.controller";
+import { loginLimiter, signupLimiter } from "./libs/utils/rateLimiter";
 
 //** Member **/
 // router.get("/member/check-me", memberController.checkAuthSession);
-router.post("/member/login", memberController.login);
-router.post("/member/signup", memberController.signup);
+router.post("/member/login", loginLimiter, memberController.login);
+router.post("/member/signup", signupLimiter, memberController.signup);
 router.post(
   "/member/logout",
   memberController.verifyAuth,

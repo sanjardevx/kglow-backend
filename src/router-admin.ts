@@ -15,18 +15,20 @@ import reviewController from "./controllers/review.controller";
 import tutorialController from "./controllers/tutorial.controller";
 import discountController from "./controllers/discount.controller";
 import makeUploader from "./libs/utils/uploader";
+import { adminAuthLimiter } from "./libs/utils/rateLimiter";
 
 /** Auth / session **/
 routerAdmin.get("/", adminController.goHome); // GET  /admin/        → shows admin home page
 
 routerAdmin
   .get("/login", adminController.getLogin) // GET  /admin/login   → shows the login form
-  .post("/login", adminController.processLogin); // POST /admin/login   → handles login form submission
+  .post("/login", adminAuthLimiter, adminController.processLogin); // POST /admin/login   → handles login form submission
 
 routerAdmin
   .get("/signup", adminController.getSignup) // GET  /admin/signup  → shows the signup form
   .post(
     "/signup",
+    adminAuthLimiter,
     makeUploader("members").single("memberImage"),
     adminController.processSignup, // POST /admin/signup  → handles signup form submission
   );

@@ -7,6 +7,7 @@ export enum HttpCode {
   UNAUTHORIZED = 401, // not logged in
   FORBIDDEN = 403, // logged in but no permission
   NOT_FOUND = 404, // resource doesn't exist
+  TOO_MANY_REQUESTS = 429, // rate limit hit
   INTERNAL_SERVER_ERROR = 500, // something broke on the server
 }
 
@@ -23,6 +24,7 @@ export enum Message {
   BLOCKED_USER = "You have been blocked, contact the admin!",
   WRONG_PASSWORD = "Wrong password, please try again!",
   NOT_AUTHENTICATED = "You are not authenticated, please login first!",
+  TOO_MANY_ATTEMPTS = "Too many attempts, please try again later!",
 
   INVALID_TUTORIAL_LINK = "Please paste a valid YouTube or Instagram link!",
 

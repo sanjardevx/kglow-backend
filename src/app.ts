@@ -4,8 +4,9 @@
  * Sends to:  router.ts (SPA) and router-admin.ts (Admin panel)
  */
 
-import express from "express";
+import express, { NextFunction, Request, Response } from "express";
 import path from "path";
+import multer from "multer";
 import cors from "cors";
 import router from "./router";
 import routerAdmin from "./router-admin";
@@ -16,6 +17,7 @@ import { MORGAN_FORMAT } from "./libs/config";
 import session from "express-session";
 import ConnectMongoDB from "connect-mongodb-session";
 import { T } from "./libs/types/common";
+import Errors, { HttpCode, Message } from "./libs/Errors";
 
 const MongoDBStore = ConnectMongoDB(session);
 const store = new MongoDBStore({
@@ -41,7 +43,20 @@ const corsOrigins = [
 
 app.use(cors({ origin: corsOrigins, credentials: true }));
 app.use(express.static(path.join(__dirname, "public")));
-app.use("/uploads", express.static("uploads"));
+// Payment screenshots carry bank details, so they are never served from the
+// open folder — only through the advisor-checked route in router-admin.ts.
+// Product and profile images stay public.
+app.use("/uploads/orders", (req, res) => {
+  res.sendStatus(HttpCode.NOT_FOUND);
+});
+app.use(
+  "/uploads",
+  express.static("uploads", {
+    // Belt and braces for files saved before uploads were limited to images:
+    // the browser goes by the extension and never guesses a page out of one.
+    setHeaders: (res) => res.setHeader("X-Content-Type-Options", "nosniff"),
+  }),
+);
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
@@ -87,5 +102,18 @@ app.set("view engine", "ejs");
 /** 4 - ROUTES **/
 app.use("/admin", routerAdmin);  // SSR — EJS admin pages
 app.use("/", router);            // SPA — JSON API
+
+
+/** 5 - ERRORS **/
+// multer reports a refused file through next(err), which Express would answer
+// with a bare 500 page. The SPA reads `message` off a JSON body, so the
+// shopper is told why their screenshot was not accepted.
+app.use((err: unknown, req: Request, res: Response, next: NextFunction) => {
+  console.log("Error on request", err);
+  if (err instanceof multer.MulterError)
+    err = new Errors(HttpCode.BAD_REQUEST, Message.INVALID_IMAGE_FILE);
+  if (err instanceof Errors) res.status(err.code).json(err);
+  else res.status(Errors.standart.code).json(Errors.standart);
+});
 
 export default app;

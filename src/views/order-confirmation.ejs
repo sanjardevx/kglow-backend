@@ -116,7 +116,7 @@
           <div class="card">
             <div class="label"><%= proofList.length > 1 ? 'Payment screenshots' : 'Payment screenshot' %></div>
             <% proofList.forEach(function(proof) { %>
-            <img src="/<%= proof %>" class="shot-img" />
+            <img src="/admin/<%= proof %>" class="shot-img" />
             <% }) %>
           </div>
           <% } %>

@@ -6,6 +6,7 @@
  */
 
 import express from "express";
+import path from "path";
 const routerAdmin = express.Router(); // creates a mini-router just for admin pages
 import adminController from "./controllers/admin.controller";
 import productController from "./controllers/product.controller";
@@ -110,6 +111,14 @@ routerAdmin.post(
   "/discount/update",
   adminController.verifyAdvisor,
   discountController.updateDiscount,
+);
+
+/** Payment proofs **/
+// The only way to open a payment screenshot — app.ts closes the public path.
+routerAdmin.use(
+  "/uploads/orders",
+  adminController.verifyAdvisor,
+  express.static(path.join("uploads", "orders")),
 );
 
 /** Order routes **/

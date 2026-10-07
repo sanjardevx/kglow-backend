@@ -11,6 +11,7 @@ import {
 import Errors, { HttpCode, Message } from "../libs/Errors";
 import AuthService from "../models/Auth.service";
 import { AUTH_TIMER } from "../libs/config";
+import jwt from "jsonwebtoken";
 import { MemberType } from "../libs/enums/member.enum";
 import {
   loginInput,
@@ -169,22 +170,23 @@ memberController.verifyAuth = async (
 ) => {
   try {
     const token = extractToken(req);
-    if (token) req.member = await authService.checkAuth(token);
+    // Read fresh every time: a member blocked or deleted in the admin panel
+    // is out on their next request, not when their token expires.
+    if (token) {
+      const { _id } = authService.checkAuth(token);
+      req.member = (await memberService.findActiveMember(_id)) as Member;
+    }
     if (!req.member)
       throw new Errors(HttpCode.UNAUTHORIZED, Message.NOT_AUTHENTICATED);
 
     next();
   } catch (err) {
     console.log("Error on verifyAuth", err);
-    // A malformed or expired token throws a JsonWebTokenError, which is not
-    // one of ours and used to fall through to the catch-all 500. Nothing else
-    // in here talks to the database, so the only other thing that can land
-    // here is the Errors we raise above — meaning every non-Errors failure is
-    // simply "this token is no good". Saying so with a 401 matters to the
-    // SPA, which signs the visitor out on a 401 and deliberately ignores a
-    // 500 as a server-side blip: left as a 500, an expired session would
-    // never clear itself and every later request would quietly fail.
-    if (!(err instanceof Errors))
+    // A malformed or expired token is a 401, and so is a member who is no
+    // longer active — the SPA signs the visitor out on a 401. A database
+    // failure must not be: the SPA deliberately treats a 500 as a passing
+    // blip, and signing everyone out over one would be far worse.
+    if (err instanceof jwt.JsonWebTokenError)
       err = new Errors(HttpCode.UNAUTHORIZED, Message.NOT_AUTHENTICATED);
     if (err instanceof Errors) res.status(err.code).json(err);
     else res.status(Errors.standart.code).json(Errors.standart);
@@ -198,7 +200,11 @@ memberController.retrieveAuth = async (
 ) => {
   try {
     const token = extractToken(req);
-    if (token) req.member = await authService.checkAuth(token);
+    if (token) {
+      const { _id } = authService.checkAuth(token);
+      const member = await memberService.findActiveMember(_id);
+      if (member) req.member = member;
+    }
 
     next();
   } catch (err) {

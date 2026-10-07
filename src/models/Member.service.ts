@@ -65,6 +65,17 @@ class MemberService {
     return await this.memberModel.findById(member._id).lean().exec();
   }
 
+  /** Who a token belongs to, as long as they may still sign in. */
+  public async findActiveMember(id: string): Promise<Member | null> {
+    return await this.memberModel
+      .findOne({
+        _id: shapeIntoMongooseObjectId(id),
+        memberStatus: MemberStatus.ACTIVE,
+      })
+      .lean()
+      .exec();
+  }
+
   public async getMemberDetails(member: Member): Promise<Member> {
     const memberId = shapeIntoMongooseObjectId(member._id);
     const result = await this.memberModel

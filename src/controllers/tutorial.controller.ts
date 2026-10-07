@@ -5,6 +5,7 @@ import TutorialService from "../models/Tutorial.service";
 import ProductService from "../models/Product.service";
 import { AdminRequest } from "../libs/types/member";
 import { TutorialInput, TutorialInquiry } from "../libs/types/tutorial";
+import { listInquiry, parseIdParam, parseInput } from "../libs/validation";
 import { ProductStatus } from "../libs/enums/product.enum";
 
 const tutorialService = new TutorialService();
@@ -16,11 +17,7 @@ const tutorialController: T = {};
 tutorialController.getTutorials = async (req: Request, res: Response) => {
   try {
     console.log("getTutorials");
-    const { page, limit } = req.query;
-    const inquiry: TutorialInquiry = {
-      page: page ? Number(page) : 1,
-      limit: limit ? Number(limit) : 12,
-    };
+    const inquiry: TutorialInquiry = parseInput(listInquiry, req.query);
 
     const result = await tutorialService.getTutorials(inquiry);
 
@@ -35,7 +32,7 @@ tutorialController.getTutorials = async (req: Request, res: Response) => {
 tutorialController.getTutorial = async (req: Request, res: Response) => {
   try {
     console.log("getTutorial");
-    const { id } = req.params;
+    const id = parseIdParam(req.params.id);
 
     const result = await tutorialService.getTutorial(id);
 

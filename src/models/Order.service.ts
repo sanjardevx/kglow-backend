@@ -7,6 +7,7 @@ import {
   OrderCreateInput,
   OrderInquiry,
   OrderItemInput,
+  OrderItemRequest,
   OrderUpdateInput,
 } from "../libs/types/order";
 import Errors, { HttpCode, Message } from "../libs/Errors";
@@ -84,7 +85,7 @@ class OrderService {
    * transfer money against this total by hand.
    */
   private async priceItems(
-    items: OrderItemInput[],
+    items: OrderItemRequest[],
   ): Promise<OrderItemInput[]> {
     if (!items?.length)
       throw new Errors(HttpCode.BAD_REQUEST, Message.PRODUCT_UNAVAILABLE);
@@ -111,7 +112,11 @@ class OrderService {
       if (price === undefined)
         throw new Errors(HttpCode.BAD_REQUEST, Message.PRODUCT_UNAVAILABLE);
 
-      return { ...item, itemPrice: price };
+      return {
+        productId: shapeIntoMongooseObjectId(item.productId),
+        itemQuantity: item.itemQuantity,
+        itemPrice: price,
+      };
     });
   }
 

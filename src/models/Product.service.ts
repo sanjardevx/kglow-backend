@@ -16,6 +16,9 @@ import ViewService from "./View.service";
 import { ViewInput } from "../libs/types/view";
 import { ViewGroup } from "../libs/enums/view.enum";
 
+const escapeRegExp = (text: string) =>
+  text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
 class ProductService {
   private readonly productModel;
   public viewService;
@@ -39,7 +42,9 @@ class ProductService {
     if (inquiry.search) {
       // Multi-brand catalog: shoppers search by brand ("Missha") as often as
       // by product name, so both fields have to match.
-      const pattern = new RegExp(inquiry.search, "i");
+      // Escaped: typed text is matched literally. Used raw, a crafted search
+      // could stall the database with a catastrophic pattern.
+      const pattern = new RegExp(escapeRegExp(inquiry.search), "i");
       match.$or = [
         { productName: { $regex: pattern } },
         { productBrand: { $regex: pattern } },

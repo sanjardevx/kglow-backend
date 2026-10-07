@@ -12,6 +12,12 @@ import Errors, { HttpCode, Message } from "../libs/Errors";
 import AuthService from "../models/Auth.service";
 import { AUTH_TIMER } from "../libs/config";
 import { MemberType } from "../libs/enums/member.enum";
+import {
+  loginInput,
+  memberUpdateInput,
+  parseInput,
+  signupInput,
+} from "../libs/validation";
 
 const memberService = new MemberService();
 const authService = new AuthService();
@@ -42,11 +48,8 @@ memberController.signup = async (req: Request, res: Response) => {
     // Only what the signup form actually asks for. Type, status and points
     // are the server's to decide: passing the whole body through let anyone
     // sign up as an ADVISOR and walk straight into the admin panel.
-    const { memberNick, memberPhone, memberPassword } = req.body;
     const input: MemberInput = {
-        memberNick,
-        memberPhone,
-        memberPassword,
+        ...parseInput(signupInput, req.body),
         memberType: MemberType.USER,
       },
       result: Member = await memberService.signup(input);
@@ -70,7 +73,7 @@ memberController.signup = async (req: Request, res: Response) => {
 memberController.login = async (req: Request, res: Response) => {
   try {
     console.log("login");
-    const input: LoginInput = req.body,
+    const input: LoginInput = parseInput(loginInput, req.body),
       result = await memberService.login(input),
       token = await authService.createToken(result);
 
@@ -130,13 +133,10 @@ memberController.updateMember = async (req: ExtendenRequest, res: Response) => {
     console.log("updateMember");
     // Same reasoning as signup: a shopper edits their own profile, never their
     // type, status, points or password (which would be saved unhashed).
-    const { memberNick, memberPhone, memberAddress, memberDesc } = req.body;
-    const input: Partial<MemberUpdateInput> = {
-      memberNick,
-      memberPhone,
-      memberAddress,
-      memberDesc,
-    };
+    const input: Partial<MemberUpdateInput> = parseInput(
+      memberUpdateInput,
+      req.body,
+    );
     if (req.file) input.memberImage = req.file.path;
 
     const result = await memberService.updateMember(req.member, input);

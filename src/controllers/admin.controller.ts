@@ -4,6 +4,7 @@ import MemberService from "../models/Member.service";
 import { AdminRequest, LoginInput, MemberInput } from "../libs/types/member";
 import { MemberType } from "../libs/enums/member.enum";
 import Errors, { HttpCode, Message } from "../libs/Errors";
+import { loginInput, parseInput } from "../libs/validation";
 
 const memberService = new MemberService(); // create instance of the service
 
@@ -78,7 +79,7 @@ adminController.processLogin = async (
 ) => {
   try {
     console.log("processLogin");
-    const input: LoginInput = req.body;
+    const input: LoginInput = parseInput(loginInput, req.body);
     const result = await memberService.processLogin(input);
     // SESSIONS AUTHENTICATION
     req.session.member = result;

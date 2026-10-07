@@ -38,6 +38,13 @@ export enum Message {
   PRODUCT_UNAVAILABLE = "One of the products is no longer available!",
 
   INVALID_IMAGE_FILE = "Please upload an image (jpg, png, webp, avif or heic) under 10 MB!",
+
+  INVALID_INPUT = "Please check your input and try again!",
+  NICK_LENGTH = "Your name must be 2 to 30 characters!",
+  INVALID_PHONE = "Please enter a valid phone number!",
+  PASSWORD_LENGTH = "Password must be 6 to 72 characters!",
+  TEXT_TOO_LONG = "That text is too long, please shorten it!",
+  INVALID_ORDER_ITEMS = "Something is wrong with your basket, please refresh and try again!",
 }
 
 // Custom error class — combines an HTTP code + a message into one object

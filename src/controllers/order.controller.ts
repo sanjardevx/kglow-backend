@@ -4,6 +4,11 @@ import { ExtendenRequest } from "../libs/types/member";
 import { Request, Response } from "express";
 import OrderService from "../models/Order.service";
 import { OrderCreateInput, OrderInquiry, OrderUpdateInput } from "../libs/types/order";
+import {
+  orderCreateInput,
+  orderInquiry,
+  parseInput,
+} from "../libs/validation";
 import { OrderStatus } from "../libs/enums/order.enum";
 
 const orderService = new OrderService();
@@ -14,9 +19,7 @@ orderController.createOrder = async (req: ExtendenRequest, res: Response) => {
   try {
     console.log("createOrder");
     const input: OrderCreateInput = {
-      items: JSON.parse(req.body.items),
-      deliveryAddress: req.body.deliveryAddress,
-      transferNote: req.body.transferNote,
+      ...parseInput(orderCreateInput, req.body),
       paymentProof: req.files?.map((file) => file.path),
     };
     const result = await orderService.createOrder(req.member, input);
@@ -32,12 +35,7 @@ orderController.createOrder = async (req: ExtendenRequest, res: Response) => {
 orderController.getMyOrders = async (req: ExtendenRequest, res: Response) => {
   try {
     console.log("getMyOrders");
-    const { page, limit, orderStatus } = req.query;
-    const inquiry: OrderInquiry = {
-      page: Number(page),
-      limit: Number(limit),
-      orderStatus: orderStatus as OrderStatus,
-    };
+    const inquiry: OrderInquiry = parseInput(orderInquiry, req.query);
     console.log("inquiry:", inquiry);
     const result = await orderService.getMyOrders(req.member, inquiry);
 

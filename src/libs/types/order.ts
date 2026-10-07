@@ -37,12 +37,18 @@ export interface Order {
 export interface OrderItemInput {
   itemQuantity: number;
   itemPrice: number;
-  orderId: ObjectId;
+  orderId?: ObjectId;
   productId?: ObjectId;
 }
 
+/** What the basket sends per line — the price is looked up, never taken. */
+export interface OrderItemRequest {
+  productId: string;
+  itemQuantity: number;
+}
+
 export interface OrderCreateInput {
-  items: OrderItemInput[];
+  items: OrderItemRequest[];
   deliveryAddress?: string;
   transferNote?: string;
   paymentProof?: string[];

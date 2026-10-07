@@ -5,6 +5,7 @@ import ReviewService from "../models/Review.service";
 import ProductService from "../models/Product.service";
 import { AdminRequest } from "../libs/types/member";
 import { ReviewInput } from "../libs/types/review";
+import { listInquiry, parseIdParam, parseInput } from "../libs/validation";
 
 const reviewService = new ReviewService();
 const productService = new ProductService();
@@ -15,7 +16,7 @@ const reviewController: T = {};
 reviewController.getProductReviews = async (req: Request, res: Response) => {
   try {
     console.log("getProductReviews");
-    const { productId } = req.params;
+    const productId = parseIdParam(req.params.productId);
 
     const result = await reviewService.getProductReviews(productId);
 
@@ -31,7 +32,7 @@ reviewController.getProductReviews = async (req: Request, res: Response) => {
 reviewController.getReviews = async (req: Request, res: Response) => {
   try {
     console.log("getReviews");
-    const limit = req.query.limit ? Number(req.query.limit) : 12;
+    const { limit } = parseInput(listInquiry, req.query);
 
     const result = await reviewService.getReviews(limit);
 

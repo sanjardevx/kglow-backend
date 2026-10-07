@@ -1,6 +1,7 @@
 console.log("Home frontend javascript file");
 
-import { createTimeline, scrambleText, stagger } from "https://esm.sh/animejs";
+// Pinned: an unversioned URL hands the admin panel whatever anime.js ships next.
+import { createTimeline, scrambleText, stagger } from "https://esm.sh/animejs@4.5.0";
 
 const tl = createTimeline({ loop: true });
 

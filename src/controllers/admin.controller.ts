@@ -133,21 +133,6 @@ adminController.updateChosenUser = async (req: Request, res: Response) => {
   }
 };
 
-adminController.checkAuthSession = async (
-  req: AdminRequest,
-  res: Response,
-) => {
-  try {
-    console.log("checkAuthSession");
-    if (req.session?.member)
-      res.send(`<script> alert("${req.session.member.memberNick}") </script>`);
-    else res.send(`<script> alert("${Message.NOT_AUTHENTICATED}") </script>`);
-  } catch (err) {
-    console.log("Error, checkAuthSession", err);
-    res.send(err);
-  }
-};
-
 adminController.verifyAdvisor = (
   req: AdminRequest,
   res: Response,

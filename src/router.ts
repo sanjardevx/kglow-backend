@@ -17,7 +17,6 @@ import discountController from "./controllers/discount.controller";
 import { loginLimiter, signupLimiter } from "./libs/utils/rateLimiter";
 
 //** Member **/
-// router.get("/member/check-me", memberController.checkAuthSession);
 router.post("/member/login", loginLimiter, memberController.login);
 router.post("/member/signup", signupLimiter, memberController.signup);
 router.post(

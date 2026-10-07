@@ -33,7 +33,6 @@ routerAdmin
     adminController.processSignup, // POST /admin/signup  → handles signup form submission
   );
 routerAdmin.get("/logout", adminController.logout);
-routerAdmin.get("/check-me", adminController.checkAuthSession);
 
 /** Product routes  **/
 routerAdmin.get(

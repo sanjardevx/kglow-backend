@@ -7,6 +7,7 @@
 import express, { NextFunction, Request, Response } from "express";
 import path from "path";
 import multer from "multer";
+import helmet from "helmet";
 import cors from "cors";
 import router from "./router";
 import routerAdmin from "./router-admin";
@@ -42,6 +43,41 @@ const corsOrigins = [
 ];
 
 app.use(cors({ origin: corsOrigins, credentials: true }));
+
+app.use(
+  helmet({
+    // The SPA lives on another domain and shows product images straight from
+    // here; helmet's default (same-origin) would break every one of them.
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+    contentSecurityPolicy: {
+      directives: {
+        // Only the admin pages are HTML, and they lean on inline handlers and
+        // `<script>alert(...)</script>` replies, so inline scripts stay allowed
+        // for now. What this still buys: scripts only from these hosts, no
+        // plugins, and no framing of the admin panel by another site.
+        "script-src": [
+          "'self'",
+          "'unsafe-inline'",
+          "https://cdn.jsdelivr.net",
+          "https://code.jquery.com",
+          "https://ajax.googleapis.com",
+          "https://unpkg.com",
+          "https://esm.sh",
+          "https://www.youtube.com",
+          "https://www.instagram.com",
+        ],
+        "script-src-attr": ["'unsafe-inline'"],
+        "img-src": ["'self'", "data:", "blob:", "https:"],
+        "frame-src": ["https://www.youtube.com", "https://www.instagram.com"],
+        "connect-src": ["'self'", "https://www.instagram.com"],
+        "frame-ancestors": ["'none'"],
+        // Railway serves HTTPS and HSTS keeps browsers there; forcing upgrades
+        // here would only break the admin panel over local http.
+        "upgrade-insecure-requests": null,
+      },
+    },
+  }),
+);
 app.use(express.static(path.join(__dirname, "public")));
 // Payment screenshots carry bank details, so they are never served from the
 // open folder — only through the advisor-checked route in router-admin.ts.

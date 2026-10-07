@@ -3,7 +3,7 @@ import { T } from "../libs/types/common";
 import { ExtendenRequest } from "../libs/types/member";
 import { Request, Response } from "express";
 import OrderService from "../models/Order.service";
-import { OrderCreateInput, OrderInquiry, OrderUpdateInput } from "../libs/types/order";
+import { OrderCreateInput, OrderInquiry } from "../libs/types/order";
 import {
   orderCreateInput,
   orderInquiry,
@@ -42,20 +42,6 @@ orderController.getMyOrders = async (req: ExtendenRequest, res: Response) => {
     res.status(HttpCode.OK).json(result);
   } catch (err) {
     console.log("Error on getMyOrders", err);
-    if (err instanceof Errors) res.status(err.code).json(err);
-    else res.status(Errors.standart.code).json(Errors.standart);
-  }
-};
-
-orderController.updateOrder = async (req: ExtendenRequest, res: Response) => {
-  try {
-    console.log("updateOrder");
-    const input: OrderUpdateInput = req.body;
-    const result = await orderService.updateOrder(req.member, input);
-
-    res.status(HttpCode.OK).json(result);
-  } catch (err) {
-    console.log("Error on updateOrder", err);
     if (err instanceof Errors) res.status(err.code).json(err);
     else res.status(Errors.standart.code).json(Errors.standart);
   }

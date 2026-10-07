@@ -8,14 +8,12 @@ import {
   OrderInquiry,
   OrderItemInput,
   OrderItemRequest,
-  OrderUpdateInput,
 } from "../libs/types/order";
 import Errors, { HttpCode, Message } from "../libs/Errors";
 import { ObjectId } from "mongoose";
 import { OrderStatus } from "../libs/enums/order.enum";
 import { ProductStatus } from "../libs/enums/product.enum";
 import ProductModel from "../schema/Product.model";
-import MemberService from "./Member.service";
 import DiscountService from "./Discount.service";
 import { calculateOrderTotals } from "../libs/utils/orderTotals";
 
@@ -23,14 +21,12 @@ class OrderService {
   private readonly orderModel;
   private readonly orderItemModel;
   private readonly productModel;
-  private readonly memberService;
   private readonly discountService;
 
   constructor() {
     this.orderModel = OrderModel;
     this.orderItemModel = OrderItemModel;
     this.productModel = ProductModel;
-    this.memberService = new MemberService();
     this.discountService = new DiscountService();
   }
 
@@ -168,34 +164,6 @@ class OrderService {
       .exec();
     if (!result) throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
 
-    return result;
-  }
-
-  public async updateOrder(
-    member: Member,
-    input: OrderUpdateInput,
-  ): Promise<Order> {
-    const memberId = shapeIntoMongooseObjectId(member._id),
-      orderId = shapeIntoMongooseObjectId(input.orderId),
-      orderStatus = input.orderStatus;
-
-    const result = await this.orderModel
-      .findByIdAndUpdate(
-        {
-          memberId: memberId,
-          _id: orderId,
-        },
-        { orderStatus: orderStatus },
-        { new: true },
-      )
-      .exec();
-
-    if (!result) throw new Errors(HttpCode.NOT_MODIFIED, Message.UPDATE_FAILED);
-
-    // order status WAITING_CONFIRMATION => CONFIRMED (give point)
-    if (orderStatus === OrderStatus.CONFIRMED) {
-      await this.memberService.addUserPoint(member, 1);
-    }
     return result;
   }
 

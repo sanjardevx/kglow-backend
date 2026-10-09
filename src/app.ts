@@ -112,7 +112,8 @@ app.use(
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
-app.use(morgan(MORGAN_FORMAT));
+// Quiet under the test runner, where a line per request buries the results.
+app.use(morgan(MORGAN_FORMAT, { skip: () => process.env.NODE_ENV === "test" }));
 
 
 /** 2 - SESSIONS (admin panel only) **/

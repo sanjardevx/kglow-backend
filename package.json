@@ -8,7 +8,8 @@
     "start:dev": "nodemon --exec ts-node src/server.ts",
     "train": "nodemon --exec ts-node src/train.ts",
     "build": "tsc",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
   },
   "author": "SIMON",
   "license": "ISC",
@@ -42,12 +43,21 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/morgan": "^1.9.10",
     "@types/multer": "^2.1.0",
+    "@types/supertest": "^7.2.1",
+    "mongodb-memory-server": "^11.3.0",
     "nodemon": "^3.1.14",
+    "supertest": "^7.3.1",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "vitest": "^5.0.5"
   },
   "engines": {
     "node": ">=22.12.0"
+  },
+  "config": {
+    "mongodbMemoryServer": {
+      "version": "7.0.14"
+    }
   }
 }

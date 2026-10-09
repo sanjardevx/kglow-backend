@@ -27,5 +27,6 @@
     "forceConsistentCasingInFileNames": true
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["node_modules"]
+  // Study notes, run on their own with `npm run train`; not part of the app.
+  "exclude": ["node_modules", "src/aboutTs.ts", "src/train.ts"]
 }

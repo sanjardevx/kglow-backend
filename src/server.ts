@@ -16,20 +16,46 @@ if (missingEnv.length) {
   process.exit(1);
 }
 
+// Before the app loads, so Sentry can hook into what it imports.
+import { initMonitoring } from "./libs/utils/monitoring";
+initMonitoring();
+
 import mongoose from "mongoose";
 import app from "./app";
+
+// Already mongoose 6's behaviour (filters ignore fields the schema doesn't
+// know); set explicitly so the upgrade to 7, which flips it, can't loosen it.
+mongoose.set("strictQuery", true);
 
 mongoose
   .connect(process.env.MONGO_URL as string)
   .then((data) => {
     console.log("MongoDB connection succeed");
     const PORT = process.env.PORT ?? 8001;
-    app.listen(PORT, function () {
+    const server = app.listen(PORT, function () {
       console.log(`The server is running successfully on port: ${PORT}`);
       console.log(`Admin project on http://localhost:${PORT}/admin \n`);
     });
+
+    // Railway sends SIGTERM on every deploy. Finishing the requests already in
+    // flight means a checkout isn't cut off halfway through its transaction.
+    const shutdown = (signal: string) => {
+      console.log(`${signal} received, shutting down`);
+      server.close(() => {
+        mongoose.disconnect().finally(() => process.exit(0));
+      });
+      // Keep-alive connections can hold close() open; don't wait forever.
+      setTimeout(() => process.exit(1), 10_000).unref();
+    };
+    process.once("SIGTERM", () => shutdown("SIGTERM"));
+    process.once("SIGINT", () => shutdown("SIGINT"));
   })
-  .catch((err) => console.log("ERROR on connection MongoDB", err));
+  .catch((err) => {
+    console.log("ERROR on connection MongoDB", err);
+    // Exiting lets Railway restart us; staying up would leave a process that
+    // looks alive but never listens.
+    process.exit(1);
+  });
 
 
 // MySQL   → uses Tables

@@ -19,6 +19,7 @@ import {
   parseInput,
   signupInput,
 } from "../libs/validation";
+import { sendError } from "../libs/utils/monitoring";
 
 const memberService = new MemberService();
 const authService = new AuthService();
@@ -66,8 +67,7 @@ memberController.signup = async (req: Request, res: Response) => {
     res.status(HttpCode.CREATED).json({ member: result, accessToken: token });
   } catch (err) {
     console.log("Error on signup", err);
-    if (err instanceof Errors) res.status(err.code).json(err);
-    else res.status(Errors.standart.code).json(Errors.standart);
+    sendError(res, err);
   }
 };
 
@@ -88,8 +88,7 @@ memberController.login = async (req: Request, res: Response) => {
     res.status(HttpCode.OK).json({ member: result, accessToken: token });
   } catch (err) {
     console.log("Error on login", err);
-    if (err instanceof Errors) res.status(err.code).json(err);
-    else res.status(Errors.standart.code).json(Errors.standart);
+    sendError(res, err);
   }
 };
 
@@ -108,8 +107,7 @@ memberController.logout = async (req: ExtendenRequest, res: Response) => {
     res.status(HttpCode.OK).json({ logout: true });
   } catch (err) {
     console.log("Error on login", err);
-    if (err instanceof Errors) res.status(err.code).json(err);
-    else res.status(Errors.standart.code).json(Errors.standart);
+    sendError(res, err);
   }
 };
 
@@ -124,8 +122,7 @@ memberController.getMemberDetails = async (
     res.status(HttpCode.OK).json(result);
   } catch (err) {
     console.log("Error on getMemberDetails", err);
-    if (err instanceof Errors) res.status(err.code).json(err);
-    else res.status(Errors.standart.code).json(Errors.standart);
+    sendError(res, err);
   }
 };
 
@@ -144,8 +141,7 @@ memberController.updateMember = async (req: ExtendenRequest, res: Response) => {
     res.status(HttpCode.OK).json(result);
   } catch (err) {
     console.log("Error on updateMember", err);
-    if (err instanceof Errors) res.status(err.code).json(err);
-    else res.status(Errors.standart.code).json(Errors.standart);
+    sendError(res, err);
   }
 };
 
@@ -158,8 +154,7 @@ memberController.getTopUsers = async (req: Request, res: Response) => {
     res.status(HttpCode.OK).json(result);
   } catch (err) {
     console.log("Error on getTopUsers", err);
-    if (err instanceof Errors) res.status(err.code).json(err);
-    else res.status(Errors.standart.code).json(Errors.standart);
+    sendError(res, err);
   }
 };
 
@@ -188,8 +183,7 @@ memberController.verifyAuth = async (
     // blip, and signing everyone out over one would be far worse.
     if (err instanceof jwt.JsonWebTokenError)
       err = new Errors(HttpCode.UNAUTHORIZED, Message.NOT_AUTHENTICATED);
-    if (err instanceof Errors) res.status(err.code).json(err);
-    else res.status(Errors.standart.code).json(Errors.standart);
+    sendError(res, err);
   }
 };
 

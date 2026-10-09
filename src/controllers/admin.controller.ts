@@ -5,6 +5,7 @@ import { AdminRequest, LoginInput, MemberInput } from "../libs/types/member";
 import { MemberType } from "../libs/enums/member.enum";
 import Errors, { HttpCode, Message } from "../libs/Errors";
 import { loginInput, parseInput } from "../libs/validation";
+import { reportError, sendError } from "../libs/utils/monitoring";
 
 const memberService = new MemberService(); // create instance of the service
 
@@ -50,7 +51,6 @@ adminController.processSignup = async (
 ) => {
   try {
     console.log("processSignup");
-    console.log("req.body:", req.body);
     const file = req.file;
 
     const newMember: MemberInput = req.body; // get form data sent from the browser
@@ -64,6 +64,7 @@ adminController.processSignup = async (
     });
   } catch (err) {
     console.log("Error on processSignup", err);
+    if (!(err instanceof Errors)) reportError(err);
     const message =
       err instanceof Errors ? err.message : Message.SOMETHING_WENT_WRONG;
     res.send(
@@ -88,6 +89,7 @@ adminController.processLogin = async (
     });
   } catch (err) {
     console.log("Error on processLogin", err);
+    if (!(err instanceof Errors)) reportError(err);
     const message =
       err instanceof Errors ? err.message : Message.SOMETHING_WENT_WRONG;
     res.send(
@@ -128,8 +130,7 @@ adminController.updateChosenUser = async (req: Request, res: Response) => {
     res.status(HttpCode.OK).json({ data: result });
   } catch (err) {
     console.log("Error on updateChosenUser", err);
-    if (err instanceof Errors) res.status(err.code).json(err);
-    else res.status(Errors.standart.code).json(Errors.standart);
+    sendError(res, err);
   }
 };
 

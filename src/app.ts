@@ -7,6 +7,7 @@
 import express, { NextFunction, Request, Response } from "express";
 import path from "path";
 import multer from "multer";
+import mongoose from "mongoose";
 import helmet from "helmet";
 import cors from "cors";
 import router from "./router";
@@ -19,11 +20,19 @@ import session from "express-session";
 import ConnectMongoDB from "connect-mongodb-session";
 import { T } from "./libs/types/common";
 import Errors, { HttpCode, Message } from "./libs/Errors";
+import { reportError, sendError } from "./libs/utils/monitoring";
 
 const MongoDBStore = ConnectMongoDB(session);
 const store = new MongoDBStore({
   uri: String(process.env.MONGO_URL),
   collection: "sessions",
+});
+// With no listener, an error here is uncaught and takes the whole shop down
+// over the admin panel's sessions. Logged instead; a database that never
+// comes up at all is handled by the connect in server.ts.
+store.on("error", (err) => {
+  console.log("Session store error", err);
+  reportError(err);
 });
 
 
@@ -78,6 +87,13 @@ app.use(
     },
   }),
 );
+// For Railway's health check: healthy only while the database is reachable,
+// since without it every page fails anyway.
+app.get("/health", (req, res) => {
+  const ok = mongoose.connection.readyState === 1;
+  res.status(ok ? HttpCode.OK : 503).json({ status: ok ? "ok" : "unavailable" });
+});
+
 app.use(express.static(path.join(__dirname, "public")));
 // Payment screenshots carry bank details, so they are never served from the
 // open folder — only through the advisor-checked route in router-admin.ts.
@@ -148,8 +164,7 @@ app.use((err: unknown, req: Request, res: Response, next: NextFunction) => {
   console.log("Error on request", err);
   if (err instanceof multer.MulterError)
     err = new Errors(HttpCode.BAD_REQUEST, Message.INVALID_IMAGE_FILE);
-  if (err instanceof Errors) res.status(err.code).json(err);
-  else res.status(Errors.standart.code).json(Errors.standart);
+  sendError(res, err);
 });
 
 export default app;

@@ -4,6 +4,7 @@ import Errors, { HttpCode, Message } from "../libs/Errors";
 import { AdminRequest } from "../libs/types/member";
 import { DiscountUpdateInput } from "../libs/types/discount";
 import DiscountService from "../models/Discount.service";
+import { reportError } from "../libs/utils/monitoring";
 
 const discountService = new DiscountService();
 
@@ -55,6 +56,7 @@ discountController.updateDiscount = async (
     );
   } catch (err) {
     console.log("Error on updateDiscount", err);
+    if (!(err instanceof Errors)) reportError(err);
     const message =
       err instanceof Errors ? err.message : Message.SOMETHING_WENT_WRONG;
     res.send(

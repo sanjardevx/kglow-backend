@@ -6,6 +6,7 @@ import ProductService from "../models/Product.service";
 import { AdminRequest } from "../libs/types/member";
 import { ReviewInput } from "../libs/types/review";
 import { listInquiry, parseIdParam, parseInput } from "../libs/validation";
+import { reportError, sendError } from "../libs/utils/monitoring";
 
 const reviewService = new ReviewService();
 const productService = new ProductService();
@@ -23,8 +24,7 @@ reviewController.getProductReviews = async (req: Request, res: Response) => {
     res.status(HttpCode.OK).json(result);
   } catch (err) {
     console.log("Error on getProductReviews", err);
-    if (err instanceof Errors) res.status(err.code).json(err);
-    else res.status(Errors.standart.code).json(Errors.standart);
+    sendError(res, err);
   }
 };
 
@@ -39,8 +39,7 @@ reviewController.getReviews = async (req: Request, res: Response) => {
     res.status(HttpCode.OK).json(result);
   } catch (err) {
     console.log("Error on getReviews", err);
-    if (err instanceof Errors) res.status(err.code).json(err);
-    else res.status(Errors.standart.code).json(Errors.standart);
+    sendError(res, err);
   }
 };
 
@@ -55,8 +54,7 @@ reviewController.getAllReviews = async (req: Request, res: Response) => {
     res.render("reviews", { reviews: data, products: products });
   } catch (err) {
     console.log("Error on getAllReviews", err);
-    if (err instanceof Errors) res.status(err.code).json(err);
-    else res.status(Errors.standart.code).json(Errors.standart);
+    sendError(res, err);
   }
 };
 
@@ -73,6 +71,7 @@ reviewController.createNewReview = async (req: AdminRequest, res: Response) => {
     );
   } catch (err) {
     console.log("Error on createNewReview", err);
+    if (!(err instanceof Errors)) reportError(err);
     const message =
       err instanceof Errors ? err.message : Message.SOMETHING_WENT_WRONG;
     res.send(
@@ -91,8 +90,7 @@ reviewController.updateChosenReview = async (req: Request, res: Response) => {
     res.status(HttpCode.OK).json({ data: result });
   } catch (err) {
     console.log("Error on updateChosenReview", err);
-    if (err instanceof Errors) res.status(err.code).json(err);
-    else res.status(Errors.standart.code).json(Errors.standart);
+    sendError(res, err);
   }
 };
 

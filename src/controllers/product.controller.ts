@@ -9,6 +9,7 @@ import {
   parseInput,
   productInquiry,
 } from "../libs/validation";
+import { reportError, sendError } from "../libs/utils/monitoring";
 
 const productService = new ProductService();
 
@@ -25,8 +26,7 @@ productController.getProducts = async (req: Request, res: Response) => {
     res.status(HttpCode.OK).json(result);
   } catch (err) {
     console.log("Error on getProducts", err);
-    if (err instanceof Errors) res.status(err.code).json(err);
-    else res.status(Errors.standart.code).json(Errors.standart);
+    sendError(res, err);
   }
 };
 
@@ -41,8 +41,7 @@ productController.getProduct = async (req: ExtendenRequest, res: Response) => {
     res.status(HttpCode.OK).json(result);
   } catch (err) {
     console.log("Error on getProduct", err);
-    if (err instanceof Errors) res.status(err.code).json(err);
-    else res.status(Errors.standart.code).json(Errors.standart);
+    sendError(res, err);
   }
 };
 
@@ -56,8 +55,7 @@ productController.getAllProducts = async (req: Request, res: Response) => {
     res.render("products", { products: data });
   } catch (err) {
     console.log("Error on getAllProducts", err);
-    if (err instanceof Errors) res.status(err.code).json(err);
-    else res.status(Errors.standart.code).json(Errors.standart);
+    sendError(res, err);
   }
 };
 
@@ -82,6 +80,7 @@ productController.createNewProduct = async (
     );
   } catch (err) {
     console.log("Error on createNewProduct", err);
+    if (!(err instanceof Errors)) reportError(err);
     const message =
       err instanceof Errors ? err.message : Message.SOMETHING_WENT_WRONG;
     res.send(
@@ -100,8 +99,7 @@ productController.updateChosenProduct = async (req: Request, res: Response) => {
     res.status(HttpCode.OK).json({ data: result });
   } catch (err) {
     console.log("Error on updateChosenProduct", err);
-    if (err instanceof Errors) res.status(err.code).json(err);
-    else res.status(Errors.standart.code).json(Errors.standart);
+    sendError(res, err);
   }
 };
 
@@ -139,8 +137,7 @@ productController.editChosenProduct = async (
         code: HttpCode.BAD_REQUEST,
         message: Message.DUPLICATE_PRODUCT,
       });
-    else if (err instanceof Errors) res.status(err.code).json(err);
-    else res.status(Errors.standart.code).json(Errors.standart);
+    else sendError(res, err);
   }
 };
 

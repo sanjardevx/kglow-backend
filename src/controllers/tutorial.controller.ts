@@ -7,6 +7,7 @@ import { AdminRequest } from "../libs/types/member";
 import { TutorialInput, TutorialInquiry } from "../libs/types/tutorial";
 import { listInquiry, parseIdParam, parseInput } from "../libs/validation";
 import { ProductStatus } from "../libs/enums/product.enum";
+import { reportError, sendError } from "../libs/utils/monitoring";
 
 const tutorialService = new TutorialService();
 const productService = new ProductService();
@@ -24,8 +25,7 @@ tutorialController.getTutorials = async (req: Request, res: Response) => {
     res.status(HttpCode.OK).json(result);
   } catch (err) {
     console.log("Error on getTutorials", err);
-    if (err instanceof Errors) res.status(err.code).json(err);
-    else res.status(Errors.standart.code).json(Errors.standart);
+    sendError(res, err);
   }
 };
 
@@ -39,8 +39,7 @@ tutorialController.getTutorial = async (req: Request, res: Response) => {
     res.status(HttpCode.OK).json(result);
   } catch (err) {
     console.log("Error on getTutorial", err);
-    if (err instanceof Errors) res.status(err.code).json(err);
-    else res.status(Errors.standart.code).json(Errors.standart);
+    sendError(res, err);
   }
 };
 
@@ -64,8 +63,7 @@ tutorialController.getAllTutorials = async (req: Request, res: Response) => {
     res.render("tutorials", { tutorials: data, products, brands });
   } catch (err) {
     console.log("Error on getAllTutorials", err);
-    if (err instanceof Errors) res.status(err.code).json(err);
-    else res.status(Errors.standart.code).json(Errors.standart);
+    sendError(res, err);
   }
 };
 
@@ -85,6 +83,7 @@ tutorialController.createNewTutorial = async (
     );
   } catch (err) {
     console.log("Error on createNewTutorial", err);
+    if (!(err instanceof Errors)) reportError(err);
     const message =
       err instanceof Errors ? err.message : Message.SOMETHING_WENT_WRONG;
     res.send(
@@ -106,8 +105,7 @@ tutorialController.updateChosenTutorial = async (
     res.status(HttpCode.OK).json({ data: result });
   } catch (err) {
     console.log("Error on updateChosenTutorial", err);
-    if (err instanceof Errors) res.status(err.code).json(err);
-    else res.status(Errors.standart.code).json(Errors.standart);
+    sendError(res, err);
   }
 };
 
@@ -121,8 +119,7 @@ tutorialController.deleteTutorial = async (req: Request, res: Response) => {
     res.status(HttpCode.OK).json({ data: result });
   } catch (err) {
     console.log("Error on deleteTutorial", err);
-    if (err instanceof Errors) res.status(err.code).json(err);
-    else res.status(Errors.standart.code).json(Errors.standart);
+    sendError(res, err);
   }
 };
 

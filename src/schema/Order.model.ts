@@ -63,6 +63,13 @@ const orderSchema = new Schema(
       required: true,
       ref: "Member",
     },
+
+    // Orders placed before stock was tracked never took any, so rejecting one
+    // of those must not hand stock back — only orders marked here did.
+    stockReserved: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true, collection: "orders" },
 );

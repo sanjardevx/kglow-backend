@@ -25,6 +25,7 @@ export interface Order {
   paymentProof?: string[];
   transferNote?: string;
   rejectReason?: string;
+  stockReserved?: boolean;
   memberId: ObjectId;
   createdAt: Date;
   updatedAt: Date;

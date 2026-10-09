@@ -10,7 +10,7 @@ import {
   OrderItemRequest,
 } from "../libs/types/order";
 import Errors, { HttpCode, Message } from "../libs/Errors";
-import { ObjectId } from "mongoose";
+import mongoose, { ClientSession, ObjectId } from "mongoose";
 import { OrderStatus } from "../libs/enums/order.enum";
 import { ProductStatus } from "../libs/enums/product.enum";
 import ProductModel from "../schema/Product.model";
@@ -50,35 +50,122 @@ class OrderService {
     const discountPercent = await this.discountService.getActivePercent();
     const totals = calculateOrderTotals(subtotal, discountPercent);
 
+    // All or nothing: the stock comes off, the order and its lines are written,
+    // or none of it happens. Two shoppers racing for the last unit can't both
+    // win — the losing transaction sees the stock already gone.
+    const session = await mongoose.startSession();
     try {
-      const newOrder: Order = await this.orderModel.create({
-        orderSubtotal: totals.subtotal,
-        orderDiscountPercent: totals.discountPercent,
-        orderDiscount: totals.discount,
-        // Never part of what the shopper transfers: free above the threshold,
-        // and paid to the courier on pickup below it.
-        orderDelivery: 0,
-        orderTotal: totals.total,
-        memberId: memberId,
-        deliveryAddress: input.deliveryAddress,
-        transferNote: input.transferNote,
-        paymentProof: input.paymentProof,
+      let newOrder!: Order;
+      await session.withTransaction(async () => {
+        await this.reserveStock(pricedItems, session);
+        [newOrder] = await this.orderModel.create(
+          [
+            {
+              orderSubtotal: totals.subtotal,
+              orderDiscountPercent: totals.discountPercent,
+              orderDiscount: totals.discount,
+              // Never part of what the shopper transfers: free above the
+              // threshold, and paid to the courier on pickup below it.
+              orderDelivery: 0,
+              orderTotal: totals.total,
+              memberId: memberId,
+              deliveryAddress: input.deliveryAddress,
+              transferNote: input.transferNote,
+              paymentProof: input.paymentProof,
+              stockReserved: true,
+            },
+          ],
+          { session },
+        );
+        await this.recordOrderItems(newOrder._id, pricedItems, session);
       });
-
-      const orderId = newOrder._id;
-      console.log("orderId:", newOrder._id);
-      await this.recordOrderItems(orderId, pricedItems);
       return newOrder;
     } catch (err) {
       console.log("Error, model:createOrder:", err);
+      if (err instanceof Errors) throw err;
       throw new Errors(HttpCode.BAD_REQUEST, Message.CREATE_FAILED);
+    } finally {
+      await session.endSession();
     }
   }
 
   /**
-   * A product deleted since it was added to the basket stops the whole order
-   * rather than being dropped or priced at zero — the shopper is about to
-   * transfer money against this total by hand.
+   * Takes each line's quantity off the shelf, but only while the product is
+   * on sale and has that many left — checked and taken in one step, so a
+   * stock count can never go below zero.
+   */
+  private async reserveStock(
+    items: OrderItemInput[],
+    session: ClientSession,
+  ): Promise<void> {
+    for (const item of items) {
+      const product = await this.productModel
+        .findOneAndUpdate(
+          {
+            _id: item.productId,
+            productStatus: ProductStatus.PROCESS,
+            productLeftCount: { $gte: item.itemQuantity },
+          },
+          { $inc: { productLeftCount: -item.itemQuantity } },
+          { new: true, session },
+        )
+        .exec();
+      if (!product)
+        throw new Errors(HttpCode.BAD_REQUEST, Message.NOT_ENOUGH_STOCK);
+
+      // The last unit just went: the shop shows it as sold out rather than
+      // letting the next shopper fill a basket checkout would refuse.
+      if (product.productLeftCount === 0)
+        await this.productModel
+          .updateOne(
+            { _id: product._id },
+            { productStatus: ProductStatus.PAUSE },
+            { session },
+          )
+          .exec();
+    }
+  }
+
+  /**
+   * Puts a rejected order's quantities back. A product that was sold out
+   * because it ran out goes back on sale; one the admin paused by hand while
+   * stock was left stays paused — that was a decision, not a count.
+   */
+  private async releaseStock(
+    orderId: ObjectId,
+    session: ClientSession,
+  ): Promise<void> {
+    const items = await this.orderItemModel
+      .find({ orderId: orderId }, null, { session })
+      .exec();
+
+    for (const item of items) {
+      const before = await this.productModel
+        .findOneAndUpdate(
+          { _id: item.productId },
+          { $inc: { productLeftCount: item.itemQuantity } },
+          { new: false, session },
+        )
+        .exec();
+
+      if (
+        before?.productStatus === ProductStatus.PAUSE &&
+        before.productLeftCount <= 0
+      )
+        await this.productModel
+          .updateOne(
+            { _id: item.productId },
+            { productStatus: ProductStatus.PROCESS },
+            { session },
+          )
+          .exec();
+    }
+  }
+
+  /**
+   * A product deleted or sold out since it was added to the basket stops the
+   * whole order rather than being dropped or priced at zero — the shopper is
+   * about to transfer money against this total by hand.
    */
   private async priceItems(
     items: OrderItemRequest[],
@@ -95,7 +182,7 @@ class OrderService {
     const products = await this.productModel
       .find({
         _id: { $in: productIds },
-        productStatus: { $ne: ProductStatus.DELETE },
+        productStatus: ProductStatus.PROCESS,
       })
       .exec();
 
@@ -119,16 +206,14 @@ class OrderService {
   private async recordOrderItems(
     orderId: ObjectId,
     input: OrderItemInput[],
+    session: ClientSession,
   ): Promise<void> {
-    const promisedList = input.map(async (item: OrderItemInput) => {
-      item.orderId = orderId;
-      item.productId = shapeIntoMongooseObjectId(item.productId);
-      await this.orderItemModel.create(item);
-      return "INSERTED";
-    });
-
-    const orderItemsState = await Promise.all(promisedList);
-    console.log("orderItemsState:", orderItemsState);
+    // One insert rather than one per line: a transaction's operations can't
+    // run in parallel on the same session.
+    await this.orderItemModel.insertMany(
+      input.map((item) => ({ ...item, orderId: orderId })),
+      { session },
+    );
   }
 
   public async getMyOrders(
@@ -212,11 +297,29 @@ class OrderService {
     };
     if (rejectReason) update.rejectReason = rejectReason;
 
-    const result = await this.orderModel
-      .findByIdAndUpdate(id, update, { new: true })
-      .exec();
-    if (!result) throw new Errors(HttpCode.NOT_MODIFIED, Message.UPDATE_FAILED);
-    return result;
+    const session = await mongoose.startSession();
+    try {
+      let result!: Order;
+      await session.withTransaction(async () => {
+        // Only a waiting order can be decided — the admin page only offers the
+        // buttons then, and deciding twice would hand the stock back twice.
+        result = await this.orderModel
+          .findOneAndUpdate(
+            { _id: id, orderStatus: OrderStatus.WAITING_CONFIRMATION },
+            update,
+            { new: true, session },
+          )
+          .exec();
+        if (!result)
+          throw new Errors(HttpCode.NOT_MODIFIED, Message.UPDATE_FAILED);
+
+        if (orderStatus === OrderStatus.REJECTED && result.stockReserved)
+          await this.releaseStock(result._id, session);
+      });
+      return result;
+    } finally {
+      await session.endSession();
+    }
   }
 }
 

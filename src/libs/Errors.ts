@@ -36,6 +36,7 @@ export enum Message {
   INVALID_DISCOUNT_PERCENT = "The discount must be between 0 and 100!",
   INVALID_DISCOUNT_DATE = "Please pick a valid end date!",
   PRODUCT_UNAVAILABLE = "One of the products is no longer available!",
+  NOT_ENOUGH_STOCK = "Sorry, there isn't enough stock left for one of the products!",
 
   INVALID_IMAGE_FILE = "Please upload an image (jpg, png, webp, avif or heic) under 10 MB!",
 

@@ -6,6 +6,7 @@ import OrderService from "../models/Order.service";
 import { OrderCreateInput, OrderInquiry } from "../libs/types/order";
 import {
   orderCreateInput,
+  orderDecisionInput,
   orderInquiry,
   parseInput,
 } from "../libs/validation";
@@ -63,7 +64,10 @@ orderController.getAllOrders = async (req: Request, res: Response) => {
 orderController.updateOrderStatus = async (req: Request, res: Response) => {
   try {
     console.log("updateOrderStatus");
-    const { orderId, orderStatus, rejectReason } = req.body;
+    const { orderId, orderStatus, rejectReason } = parseInput(
+      orderDecisionInput,
+      req.body,
+    );
 
     // A rejection with no explanation is exactly what this feature exists to
     // fix, so the reason is required on that path and ignored on the others.

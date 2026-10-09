@@ -100,6 +100,14 @@ export const orderInquiry = z.object({
 });
 
 /** Orders **/
+// The admin's two buttons. Anything else — back to waiting, an unknown
+// status — isn't a decision the order page can make.
+export const orderDecisionInput = z.object({
+  orderId: z.string().regex(OBJECT_ID),
+  orderStatus: z.enum([OrderStatus.CONFIRMED, OrderStatus.REJECTED]),
+  rejectReason: text(500).optional(),
+});
+
 // Multipart can't carry an array, so the basket arrives as a JSON string.
 const parseJson = (v: unknown) => {
   if (typeof v !== "string") return v;

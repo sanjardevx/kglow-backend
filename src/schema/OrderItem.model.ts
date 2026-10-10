@@ -25,4 +25,8 @@ const orderItemSchema = new Schema(
   { timestamps: true, collection: "orderItems" },
 );
 
+// Every order list joins its lines by orderId; without this, each order in
+// the list reads the whole orderItems collection.
+orderItemSchema.index({ orderId: 1 });
+
 export default mongoose.model("OrderItem", orderItemSchema);

@@ -23,6 +23,9 @@ const viewSchema = new Schema(
   { timestamps: true },
 );
 
+// Asked each time a signed-in shopper opens a product: "seen it before?"
+viewSchema.index({ memberId: 1, viewRefId: 1 });
+
 // Untyped on purpose: mongoose 6.13 infers document types the services'
 // interfaces don't match yet (their ObjectId is the schema type). Kept as
 // loose as 6.2 was until those interfaces are corrected.

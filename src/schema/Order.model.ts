@@ -74,6 +74,11 @@ const orderSchema = new Schema(
   { timestamps: true, collection: "orders" },
 );
 
+// A shopper's order tabs: their orders of one status, newest first.
+orderSchema.index({ memberId: 1, orderStatus: 1, createdAt: -1 });
+// The admin's order list, newest first.
+orderSchema.index({ createdAt: -1 });
+
 // Untyped on purpose: mongoose 6.13 infers document types the services'
 // interfaces don't match yet (their ObjectId is the schema type). Kept as
 // loose as 6.2 was until those interfaces are corrected.

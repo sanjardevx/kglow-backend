@@ -16,6 +16,7 @@
   "dependencies": {
     "@sentry/node": "^11.10.0",
     "bcryptjs": "^2.4.3",
+    "compression": "^1.8.2",
     "connect-mongodb-session": "^3.1.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
@@ -34,6 +35,7 @@
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
+    "@types/compression": "^1.8.1",
     "@types/connect-mongodb-session": "^2.4.8",
     "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",

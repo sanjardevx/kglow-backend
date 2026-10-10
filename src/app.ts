@@ -9,6 +9,7 @@ import path from "path";
 import multer from "multer";
 import mongoose from "mongoose";
 import helmet from "helmet";
+import compression from "compression";
 import cors from "cors";
 import router from "./router";
 import routerAdmin from "./router-admin";
@@ -87,6 +88,10 @@ app.use(
     },
   }),
 );
+// JSON and pages shrink to a fraction over the wire — product lists most of
+// all. Images are skipped; they are compressed already.
+app.use(compression());
+
 // For Railway's health check: healthy only while the database is reachable,
 // since without it every page fails anyway.
 app.get("/health", (req, res) => {
@@ -104,6 +109,11 @@ app.use("/uploads/orders", (req, res) => {
 app.use(
   "/uploads",
   express.static("uploads", {
+    // Every upload gets a fresh random name and is never rewritten — an edit
+    // saves a new file under a new name — so browsers may keep each one for
+    // good and skip asking again on the next visit.
+    maxAge: "365d",
+    immutable: true,
     // Belt and braces for files saved before uploads were limited to images:
     // the browser goes by the extension and never guesses a page out of one.
     setHeaders: (res) => res.setHeader("X-Content-Type-Options", "nosniff"),

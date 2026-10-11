@@ -59,7 +59,7 @@ describe("uploads", () => {
       .field("productLeftCount", "5")
       // The name claims HTML; the content type says PNG — the saved name follows the type.
       .attach("productImages", PNG, { filename: "evil.html", contentType: "image/png" });
-    expect(created.text).toContain("Successful creation");
+    expect(created.headers.location).toBe("/admin/product/all");
 
     const [product] = (await request(ctx.app).get("/product/all")).body;
     const image: string = product.productImages[0];

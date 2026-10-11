@@ -14,12 +14,12 @@ function validateSignupForm() {
     memberPassword = $(".member-password").val();
 
   if (memberNick === "" || memberPassword === "") {
-    alert("Please insert all required inputs!");
+    toast("Please insert all required inputs.", "bad");
     return false;
   }
 
   if (memberPassword.length < 8) {
-    alert("Password must be at least 8 characters!");
+    toast("Password must be at least 8 characters.", "bad");
     return false;
   }
 }

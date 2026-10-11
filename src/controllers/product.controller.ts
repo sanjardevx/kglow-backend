@@ -15,6 +15,7 @@ import {
   pageFromQuery,
   pagingFor,
 } from "../libs/utils/paging";
+import { redirectWithNotice } from "../libs/utils/notice";
 
 const productService = new ProductService();
 
@@ -86,17 +87,19 @@ productController.createNewProduct = async (
     });
 
     await productService.createNewProduct(data);
-    res.send(
-      `<script>alert("Successful creation"); window.location.replace('/admin/product/all') </script>`,
+    redirectWithNotice(
+      req,
+      res,
+      "/admin/product/all",
+      "good",
+      `${data.productName} added to the catalog.`,
     );
   } catch (err) {
     console.log("Error on createNewProduct", err);
     if (!(err instanceof Errors)) reportError(err);
     const message =
       err instanceof Errors ? err.message : Message.SOMETHING_WENT_WRONG;
-    res.send(
-      `<script>alert("${message}"); window.location.replace('/admin/product/all') </script>`,
-    );
+    redirectWithNotice(req, res, "/admin/product/all", "bad", message);
   }
 };
 

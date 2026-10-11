@@ -151,7 +151,9 @@ describe("admin", () => {
       .post("/admin/login")
       .type("form")
       .send({ memberNick: "shopper", memberPassword: "shopper-pass-1" });
-    expect(shopper.status).not.toBe(302);
+    // Refused logins come back to the login page carrying the reason, so the
+    // destination is what tells a refusal apart from a success.
+    expect(shopper.headers.location).toBe("/admin/login");
 
     const owner = await request(ctx.app)
       .post("/admin/login")
@@ -172,7 +174,7 @@ describe("admin", () => {
       .field("memberNick", "owner2")
       .field("memberPhone", "900000002")
       .field("memberPassword", "owner-pass-123");
-    expect(res.status).not.toBe(302);
+    expect(res.headers.location).toBe("/admin/signup");
   });
 
   it("blocks a member out on their very next request, and unblocks them", async () => {

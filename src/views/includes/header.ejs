@@ -31,5 +31,13 @@
       crossorigin="anonymous"
     ></script>
     <script src="/js/main.js"></script>
+
+    <%# A message left by whatever redirected here, as data rather than as a
+        script. main.js reads it on load and shows it as a toast. -%>
+    <% if (typeof notice !== 'undefined' && notice) { %>
+    <script id="admin-notice" type="application/json">
+      <%- JSON.stringify(notice).replace(/</g, "\u003c") %>
+    </script>
+    <% } %>
   </head>
 </html>

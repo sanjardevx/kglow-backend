@@ -294,10 +294,11 @@ $(function () {
         // alongside the title/URL — without this it would still hold the
         // pre-change value and silently revert the status on the next save.
         $(`#tutorial-edit-overlay-${id}`).find(".edit-status").val(tutorialStatus);
-      } else alert("Tutorial update failed!");
+        toast(`Tutorial set to ${tutorialStatus.toLowerCase()}.`);
+      } else toast("Tutorial update failed.", "bad");
     } catch (err) {
       console.log(err);
-      alert("Tutorial update failed!");
+      toast(errorMessage(err, "Tutorial update failed."), "bad");
     }
   });
 
@@ -328,7 +329,7 @@ $(function () {
     const tutorialStatus = $overlay.find(".edit-status").val();
 
     if (!tutorialTitle || !tutorialUrl || !tutorialBrand) {
-      alert("Title, video link and brand cannot be empty!");
+      toast("Title, video link and brand cannot be empty.", "bad");
       return;
     }
 
@@ -346,30 +347,39 @@ $(function () {
         // blockquote) — simplest to just re-render from the server rather
         // than patch that live.
         window.location.reload();
-      } else alert("Tutorial update failed!");
+      } else toast("Tutorial update failed.", "bad");
     } catch (err) {
       console.log(err);
-      alert("Tutorial update failed!");
+      toast(errorMessage(err, "Tutorial update failed."), "bad");
     }
   });
 
-  /** Delete — confirm() has to run inside this same handler (not a
-   * separate onclick on the button) so that clicking Cancel actually stops
-   * the axios call instead of just failing to block a competing listener. */
+  /** Delete — the question is awaited inside this same handler (not a
+   * separate onclick on the button) so that answering No actually stops the
+   * axios call instead of just failing to block a competing listener. */
   $(".tutorial-delete-btn").on("click", async function () {
-    if (!confirm("This tutorial will be permanently deleted. Continue?"))
-      return;
-
     const id = $(this).data("id");
+    const title = $(`#card-${id}`).find(".tutorial-title").text().trim();
+
+    const agreed = await confirmAction({
+      title: "Delete this tutorial?",
+      body: title
+        ? `"${title}" will be removed from the site. This cannot be undone.`
+        : "It will be removed from the site. This cannot be undone.",
+      confirmLabel: "Delete",
+      danger: true,
+    });
+    if (!agreed) return;
 
     try {
       const response = await axios.delete(`/admin/tutorial/${id}`);
       if (response.data.data) {
         $(`#card-${id}`).remove();
-      } else alert("Tutorial delete failed!");
+        toast("Tutorial deleted.");
+      } else toast("Tutorial delete failed.", "bad");
     } catch (err) {
       console.log(err);
-      alert("Tutorial delete failed!");
+      toast(errorMessage(err, "Tutorial delete failed."), "bad");
     }
   });
 });
@@ -380,11 +390,11 @@ function validateTutorialForm() {
   const tutorialBrand = $("#tutorial-brand-input").val();
 
   if (!tutorialUrl || !tutorialTitle || !tutorialBrand) {
-    alert("Please insert the video link, a title and a brand!");
+    toast("Please insert the video link, a title and a brand.", "bad");
     return false;
   }
   if (!parseTutorialLinkClient(tutorialUrl)) {
-    alert("Link not recognised — paste a YouTube or Instagram link.");
+    toast("Link not recognised — paste a YouTube or Instagram link.", "bad");
     return false;
   }
   return true;

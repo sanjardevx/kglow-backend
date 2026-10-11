@@ -11,6 +11,7 @@ import {
   pageFromQuery,
   pagingFor,
 } from "../libs/utils/paging";
+import { redirectWithNotice } from "../libs/utils/notice";
 
 const memberService = new MemberService(); // create instance of the service
 
@@ -72,9 +73,7 @@ adminController.processSignup = async (
     if (!(err instanceof Errors)) reportError(err);
     const message =
       err instanceof Errors ? err.message : Message.SOMETHING_WENT_WRONG;
-    res.send(
-      `<script>alert("${message}"); window.location.replace('/admin/signup') </script>`,
-    );
+    redirectWithNotice(req, res, "/admin/signup", "bad", message);
   }
 };
 
@@ -97,9 +96,7 @@ adminController.processLogin = async (
     if (!(err instanceof Errors)) reportError(err);
     const message =
       err instanceof Errors ? err.message : Message.SOMETHING_WENT_WRONG;
-    res.send(
-      `<script>alert("${message}"); window.location.replace('/admin/login') </script>`,
-    );
+    redirectWithNotice(req, res, "/admin/login", "bad", message);
   }
 };
 

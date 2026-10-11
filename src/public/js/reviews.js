@@ -26,10 +26,11 @@ $(function () {
           .removeClass("status-active status-hidden")
           .addClass(`status-${reviewStatus.toLowerCase()}`)
           .blur();
-      } else alert("Review update failed!");
+        toast(`Review set to ${reviewStatus.toLowerCase()}.`);
+      } else toast("Review update failed.", "bad");
     } catch (err) {
       console.log(err);
-      alert("Review update failed!");
+      toast(errorMessage(err, "Review update failed."), "bad");
     }
   });
 });
@@ -48,7 +49,7 @@ function validateForm() {
     reviewText === "" ||
     reviewStatus === ""
   ) {
-    alert("Please insert all details!");
+    toast("Please fill in every field.", "bad");
     return false;
   } else return true;
 }

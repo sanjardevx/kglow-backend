@@ -7,6 +7,7 @@ import { AdminRequest } from "../libs/types/member";
 import { ReviewInput } from "../libs/types/review";
 import { listInquiry, parseIdParam, parseInput } from "../libs/validation";
 import { reportError, sendError } from "../libs/utils/monitoring";
+import { redirectWithNotice } from "../libs/utils/notice";
 
 const reviewService = new ReviewService();
 const productService = new ProductService();
@@ -66,17 +67,13 @@ reviewController.createNewReview = async (req: AdminRequest, res: Response) => {
     const data: ReviewInput = req.body;
 
     await reviewService.createNewReview(data);
-    res.send(
-      `<script>alert("Successful creation"); window.location.replace('/admin/review/all') </script>`,
-    );
+    redirectWithNotice(req, res, "/admin/review/all", "good", "Review added.");
   } catch (err) {
     console.log("Error on createNewReview", err);
     if (!(err instanceof Errors)) reportError(err);
     const message =
       err instanceof Errors ? err.message : Message.SOMETHING_WENT_WRONG;
-    res.send(
-      `<script>alert("${message}"); window.location.replace('/admin/review/all') </script>`,
-    );
+    redirectWithNotice(req, res, "/admin/review/all", "bad", message);
   }
 };
 

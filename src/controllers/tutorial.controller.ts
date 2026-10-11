@@ -8,6 +8,7 @@ import { TutorialInput, TutorialInquiry } from "../libs/types/tutorial";
 import { listInquiry, parseIdParam, parseInput } from "../libs/validation";
 import { ProductStatus } from "../libs/enums/product.enum";
 import { reportError, sendError } from "../libs/utils/monitoring";
+import { redirectWithNotice } from "../libs/utils/notice";
 
 const tutorialService = new TutorialService();
 const productService = new ProductService();
@@ -78,17 +79,19 @@ tutorialController.createNewTutorial = async (
     const data: TutorialInput = req.body;
 
     await tutorialService.createNewTutorial(data);
-    res.send(
-      `<script>alert("Successful creation"); window.location.replace('/admin/tutorial/all') </script>`,
+    redirectWithNotice(
+      req,
+      res,
+      "/admin/tutorial/all",
+      "good",
+      "Tutorial added.",
     );
   } catch (err) {
     console.log("Error on createNewTutorial", err);
     if (!(err instanceof Errors)) reportError(err);
     const message =
       err instanceof Errors ? err.message : Message.SOMETHING_WENT_WRONG;
-    res.send(
-      `<script>alert("${message}"); window.location.replace('/admin/tutorial/all') </script>`,
-    );
+    redirectWithNotice(req, res, "/admin/tutorial/all", "bad", message);
   }
 };
 

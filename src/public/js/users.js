@@ -18,10 +18,11 @@ $(".member-status").on("change", function (e) {
           .removeClass("status-active status-block status-delete")
           .addClass(`status-${memberStatus.toLowerCase()}`)
           .blur();
-      } else alert("User update failed!");
+        toast(`Status set to ${memberStatus.toLowerCase()}.`);
+      } else toast("User update failed.", "bad");
     })
     .catch((err) => {
       console.log(err);
-      alert("User update failed!");
+      toast(errorMessage(err, "User update failed."), "bad");
     });
 });

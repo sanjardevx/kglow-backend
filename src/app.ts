@@ -22,6 +22,7 @@ import ConnectMongoDB from "connect-mongodb-session";
 import { T } from "./libs/types/common";
 import Errors, { HttpCode, Message } from "./libs/Errors";
 import { reportError, sendError } from "./libs/utils/monitoring";
+import { takeNotice } from "./libs/utils/notice";
 
 const MongoDBStore = ConnectMongoDB(session);
 const store = new MongoDBStore({
@@ -155,6 +156,9 @@ app.use(
 app.use("/admin", function (req, res, next) {
   const sessionInstance = req.session as T;
   res.locals.member = sessionInstance.member;
+  // A message left by the handler that redirected here, shown once as a toast
+  // and then gone — see libs/utils/notice.ts.
+  res.locals.notice = takeNotice(req);
   next();
 });
 

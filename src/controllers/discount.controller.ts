@@ -5,6 +5,7 @@ import { AdminRequest } from "../libs/types/member";
 import { DiscountUpdateInput } from "../libs/types/discount";
 import DiscountService from "../models/Discount.service";
 import { reportError } from "../libs/utils/monitoring";
+import { redirectWithNotice } from "../libs/utils/notice";
 
 const discountService = new DiscountService();
 
@@ -51,17 +52,13 @@ discountController.updateDiscount = async (
       ? `Sale is ON at ${result.discountPercent}%`
       : "Sale is OFF";
 
-    res.send(
-      `<script>alert("Saved — ${note}"); window.location.replace('/admin/discount') </script>`,
-    );
+    redirectWithNotice(req, res, "/admin/discount", "good", `Saved — ${note}`);
   } catch (err) {
     console.log("Error on updateDiscount", err);
     if (!(err instanceof Errors)) reportError(err);
     const message =
       err instanceof Errors ? err.message : Message.SOMETHING_WENT_WRONG;
-    res.send(
-      `<script>alert("${message}"); window.location.replace('/admin/discount') </script>`,
-    );
+    redirectWithNotice(req, res, "/admin/discount", "bad", message);
   }
 };
 

@@ -65,11 +65,13 @@ app.use(
         // `<script>alert(...)</script>` replies, so inline scripts stay allowed
         // for now. What this still buys: scripts only from these hosts, no
         // plugins, and no framing of the admin panel by another site.
+        // One host per script the admin still loads: jQuery, axios, anime.js
+        // and the two embeds. jsdelivr and code.jquery.com left with
+        // Bootstrap's JS, Popper and the slim jQuery; jsdelivr still serves
+        // Bootstrap's stylesheet, which style-src covers, not this.
         "script-src": [
           "'self'",
           "'unsafe-inline'",
-          "https://cdn.jsdelivr.net",
-          "https://code.jquery.com",
           "https://ajax.googleapis.com",
           "https://unpkg.com",
           "https://esm.sh",

@@ -15,6 +15,7 @@ import ProductModel from "../schema/Product.model";
 import ViewService from "./View.service";
 import { ViewInput } from "../libs/types/view";
 import { ViewGroup } from "../libs/enums/view.enum";
+import { skipFor } from "../libs/utils/paging";
 
 const escapeRegExp = (text: string) =>
   text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -113,11 +114,31 @@ class ProductService {
 
   /** SSR */
 
-  public async getAllProducts(): Promise<Product[]> {
-    const result = await this.productModel.find().exec();
+  /** Every product, in an order a dropdown reads well in. The review and
+   *  tutorial forms pick from the whole catalog, so they cannot take a page
+   *  of it — a product missing from the select cannot be chosen at all. */
+  public async listAllProducts(): Promise<Product[]> {
+    return await this.productModel
+      .find()
+      .sort({ productBrand: 1, productName: 1 })
+      .exec();
+  }
+
+  /** SSR: one page of the admin's product list, newest first. */
+  public async getAllProducts(
+    page: number,
+    size: number,
+  ): Promise<{ list: Product[]; total: number }> {
+    const total = await this.productModel.countDocuments().exec();
+    const result = await this.productModel
+      .find()
+      .sort({ createdAt: -1 })
+      .skip(skipFor(page, size))
+      .limit(size)
+      .exec();
     if (!result) throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
 
-    return result;
+    return { list: result, total };
   }
 
   public async createNewProduct(input: ProductInput): Promise<Product> {

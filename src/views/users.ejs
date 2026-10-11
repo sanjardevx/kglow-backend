@@ -36,7 +36,7 @@
                   <!--  LOOP USERS: START  -->
                   <% users.map(function(value, index) { %>
                   <tr>
-                    <td class="cell-soft"><%= index+1 %></td>
+                    <td class="cell-soft"><%= (paging.page - 1) * paging.size + index + 1 %></td>
                     <td class="cell-strong"><%= value.memberNick %></td>
                     <td class="cell-soft"><%= value.memberPhone %></td>
                     <td class="cell-soft"><%= new Date(value.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) %></td>
@@ -53,6 +53,7 @@
                 </tbody>
               </table>
             </div>
+            <%- include('includes/pager', { paging: paging, href: '/admin/user/all' }) %>
           </div>
         </div>
       </div>

@@ -29,7 +29,7 @@
                   <!--  LOOP ORDERS: START  -->
                   <% orders.map(function(value, key) { %>
                   <tr class="<%= value.orderStatus === 'WAITING_CONFIRMATION' ? 'row-waiting' : '' %>">
-                    <td class="cell-soft"><%= key + 1 %></td>
+                    <td class="cell-soft"><%= (paging.page - 1) * paging.size + key + 1 %></td>
                     <td class="cell-strong"><%= value.memberData[0] ? value.memberData[0].memberNick : '-' %></td>
                     <td class="cell-soft"><%= value.memberData[0] ? value.memberData[0].memberPhone : '-' %></td>
                     <td class="cell-strong">
@@ -53,6 +53,7 @@
                 </tbody>
               </table>
             </div>
+            <%- include('includes/pager', { paging: paging, href: '/admin/order/all' }) %>
           </div>
         </div>
       </div>

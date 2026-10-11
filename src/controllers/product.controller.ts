@@ -10,6 +10,11 @@ import {
   productInquiry,
 } from "../libs/validation";
 import { reportError, sendError } from "../libs/utils/monitoring";
+import {
+  ADMIN_PAGE_SIZE,
+  pageFromQuery,
+  pagingFor,
+} from "../libs/utils/paging";
 
 const productService = new ProductService();
 
@@ -49,10 +54,16 @@ productController.getProduct = async (req: ExtendenRequest, res: Response) => {
 productController.getAllProducts = async (req: Request, res: Response) => {
   try {
     console.log("getAllProducts");
-    const data = await productService.getAllProducts();
-    // console.log("products:", data)
+    const page = pageFromQuery(req.query.page);
+    const { list, total } = await productService.getAllProducts(
+      page,
+      ADMIN_PAGE_SIZE,
+    );
+    const paging = pagingFor(total, page);
+    if (page > paging.pages)
+      return res.redirect(`/admin/product/all?page=${paging.pages}`);
 
-    res.render("products", { products: data });
+    res.render("products", { products: list, paging });
   } catch (err) {
     console.log("Error on getAllProducts", err);
     sendError(res, err);

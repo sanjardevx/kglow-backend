@@ -1,0 +1,33 @@
+<%#
+  Pages for an admin list. Takes `paging` ({ page, pages, total, size }) and
+  `href` — the list's own path, which the links hang ?page= off.
+
+  Deliberately just Previous / Next and a position: the admin works from the
+  top of these lists, so a row of numbered pages would be a lot of furniture
+  for a jump nobody makes. The count is always shown, even on a single page,
+  because "how many orders are there" is a question the page should answer.
+-%>
+<nav class="pager" aria-label="Pages">
+  <% if (paging.pages > 1) { %>
+  <% if (paging.page > 1) { %>
+  <a class="pager-step" href="<%= href %>?page=<%= paging.page - 1 %>" rel="prev">← Previous</a>
+  <% } else { %>
+  <span class="pager-step is-off" aria-hidden="true">← Previous</span>
+  <% } %>
+  <% } %>
+
+  <span class="pager-count">
+    <% if (paging.pages > 1) { %>
+    Page <%= paging.page %> of <%= paging.pages %> ·
+    <% } %>
+    <%= paging.total %> in total
+  </span>
+
+  <% if (paging.pages > 1) { %>
+  <% if (paging.page < paging.pages) { %>
+  <a class="pager-step" href="<%= href %>?page=<%= paging.page + 1 %>" rel="next">Next →</a>
+  <% } else { %>
+  <span class="pager-step is-off" aria-hidden="true">Next →</span>
+  <% } %>
+  <% } %>
+</nav>

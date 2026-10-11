@@ -6,6 +6,11 @@ import { MemberType } from "../libs/enums/member.enum";
 import Errors, { HttpCode, Message } from "../libs/Errors";
 import { loginInput, parseInput } from "../libs/validation";
 import { reportError, sendError } from "../libs/utils/monitoring";
+import {
+  ADMIN_PAGE_SIZE,
+  pageFromQuery,
+  pagingFor,
+} from "../libs/utils/paging";
 
 const memberService = new MemberService(); // create instance of the service
 
@@ -113,9 +118,15 @@ adminController.logout = async (req: AdminRequest, res: Response) => {
 adminController.getUsers = async (req: Request, res: Response) => {
   try {
     console.log("getUsers");
-    const result = await memberService.getUsers();
+    const page = pageFromQuery(req.query.page);
+    const { list, total } = await memberService.getUsers(page, ADMIN_PAGE_SIZE);
+    const paging = pagingFor(total, page);
+    // Past the last page there is nothing to show and no way back except the
+    // address bar, so send them to the end of the list instead.
+    if (page > paging.pages)
+      return res.redirect(`/admin/user/all?page=${paging.pages}`);
 
-    res.render("users", { users: result });
+    res.render("users", { users: list, paging });
   } catch (err) {
     console.log("Error on getUsers", err);
     res.redirect("/admin/login");

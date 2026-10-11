@@ -16,6 +16,7 @@ import { ProductStatus } from "../libs/enums/product.enum";
 import ProductModel from "../schema/Product.model";
 import DiscountService from "./Discount.service";
 import { calculateOrderTotals } from "../libs/utils/orderTotals";
+import { skipFor } from "../libs/utils/paging";
 
 class OrderService {
   private readonly orderModel;
@@ -252,10 +253,18 @@ class OrderService {
     return result;
   }
 
-  public async getAllOrders(): Promise<Order[]> {
+  /** SSR: one page of the admin's order list, newest first, with the total so
+   *  the pager knows how many pages there are. */
+  public async getAllOrders(
+    page: number,
+    size: number,
+  ): Promise<{ list: Order[]; total: number }> {
+    const total = await this.orderModel.countDocuments().exec();
     const result = await this.orderModel
       .aggregate([
         { $sort: { createdAt: -1 } },
+        { $skip: skipFor(page, size) },
+        { $limit: size },
         {
           $lookup: {
             from: "orderItems",
@@ -283,7 +292,7 @@ class OrderService {
       ])
       .exec();
     if (!result) throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
-    return result;
+    return { list: result, total };
   }
 
   public async updateOrderStatus(

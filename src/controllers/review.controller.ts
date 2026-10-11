@@ -49,7 +49,7 @@ reviewController.getAllReviews = async (req: Request, res: Response) => {
     console.log("getAllReviews");
     const data = await reviewService.getAllReviews();
     // the select in the "New Review" form needs the real product list
-    const products = await productService.getAllProducts();
+    const products = await productService.listAllProducts();
 
     res.render("reviews", { reviews: data, products: products });
   } catch (err) {

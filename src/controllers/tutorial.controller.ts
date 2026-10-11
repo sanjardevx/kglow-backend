@@ -53,7 +53,7 @@ tutorialController.getAllTutorials = async (req: Request, res: Response) => {
     // actually stock, and the products behind them (the brand choice
     // narrows the product list client-side, so the admin never scrolls the
     // whole catalog). Soft-deleted products are left out of both.
-    const products = (await productService.getAllProducts()).filter(
+    const products = (await productService.listAllProducts()).filter(
       (product) => product.productStatus !== ProductStatus.DELETE,
     );
     const brands = [

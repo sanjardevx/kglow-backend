@@ -9,6 +9,7 @@ import {
 import MemberModel from "../schema/Member.model";
 import * as bcrypt from "bcryptjs";
 import { shapeIntoMongooseObjectId } from "../libs/config";
+import { skipFor } from "../libs/utils/paging";
 
 class MemberService {
   private readonly memberModel; // holds the MongoDB model (used to query the DB)
@@ -180,13 +181,22 @@ class MemberService {
     return await this.memberModel.findById(member._id).exec();
   }
 
-  public async getUsers(): Promise<Member[]> {
+  /** SSR: one page of the admin's user list, newest first. */
+  public async getUsers(
+    page: number,
+    size: number,
+  ): Promise<{ list: Member[]; total: number }> {
+    const filter = { memberType: MemberType.USER };
+    const total = await this.memberModel.countDocuments(filter).exec();
     const result = await this.memberModel
-      .find({ memberType: MemberType.USER })
+      .find(filter)
+      .sort({ createdAt: -1 })
+      .skip(skipFor(page, size))
+      .limit(size)
       .exec();
     if (!result) throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
 
-    return result;
+    return { list: result, total };
   }
 
   public async updateChosenUser(input: MemberUpdateInput): Promise<Member[]> {

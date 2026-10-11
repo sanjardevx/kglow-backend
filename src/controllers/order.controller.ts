@@ -12,6 +12,11 @@ import {
 } from "../libs/validation";
 import { OrderStatus } from "../libs/enums/order.enum";
 import { sendError } from "../libs/utils/monitoring";
+import {
+  ADMIN_PAGE_SIZE,
+  pageFromQuery,
+  pagingFor,
+} from "../libs/utils/paging";
 
 const orderService = new OrderService();
 
@@ -51,8 +56,16 @@ orderController.getMyOrders = async (req: ExtendenRequest, res: Response) => {
 orderController.getAllOrders = async (req: Request, res: Response) => {
   try {
     console.log("getAllOrders");
-    const data = await orderService.getAllOrders();
-    res.render("order-confirmation", { orders: data });
+    const page = pageFromQuery(req.query.page);
+    const { list, total } = await orderService.getAllOrders(
+      page,
+      ADMIN_PAGE_SIZE,
+    );
+    const paging = pagingFor(total, page);
+    if (page > paging.pages)
+      return res.redirect(`/admin/order/all?page=${paging.pages}`);
+
+    res.render("order-confirmation", { orders: list, paging });
   } catch (err) {
     console.log("Error on getAllOrders", err);
     sendError(res, err);

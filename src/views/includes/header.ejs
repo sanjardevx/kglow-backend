@@ -7,22 +7,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <link rel="icon" type="image/png" href="/img/favicon.png" />
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css"
-      integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
-      crossorigin="anonymous"
-    />
     <link rel="stylesheet" type="text/css" href="/css/main.css" />
     <link rel="stylesheet" type="text/css" href="/css/ops-console.css" />
 
     <!-- jQuery, for the selectors and slideToggle the page scripts use. The
          slim build that used to load first had no effects and was replaced by
          this one a few lines later anyway; Bootstrap's JS and Popper went with
-         it, since no view uses a Bootstrap plugin or a data-toggle. -->
+         it, since no view uses a Bootstrap plugin or a data-toggle, and its
+         CSS followed — main.css carries the reset rules the pages relied on. 3.7.1
+         rather than the original 3.3.1, whose .html()/.append() could run
+         script hidden in the HTML they were given (CVE-2020-11022/11023). -->
     <script
-      src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"
-      integrity="sha384-tsQFqpEReu7ZLhBV2VZlAu7zcOV+rXbYlF2cqB8txI/8aZajjp4Bqd+V6D5IgvKT"
+      src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"
+      integrity="sha384-1H217gwSVyLSIfaLxHbE7dRb3v4mYCKbpQvzx0cegeju1MVsGrX5xXxAvs/HgeFs"
       crossorigin="anonymous"
     ></script>
     <script

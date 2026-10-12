@@ -683,7 +683,13 @@
   padding: 0;
 }
 
+/* Column flex and min-width: 0 were Bootstrap's .card until it was dropped;
+   the dashboard panels size their rows by them, so they stay. */
 .card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow-wrap: break-word;
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 12px;

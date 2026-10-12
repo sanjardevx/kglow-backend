@@ -71,8 +71,8 @@ app.use(
         // One host per script the admin still loads: jQuery, axios and the
         // two embeds. jsdelivr and code.jquery.com left with Bootstrap's JS,
         // Popper and the slim jQuery; esm.sh left with the anime.js splash
-        // the dashboard replaced. jsdelivr still serves Bootstrap's
-        // stylesheet, which style-src covers, not this.
+        // the dashboard replaced. Bootstrap's stylesheet has gone too, so
+        // the admin loads no third-party CSS at all.
         "script-src": [
           "'self'",
           "'unsafe-inline'",

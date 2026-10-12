@@ -389,6 +389,50 @@
   }
 }
 
+/* ---------- Small screens ---------- */
+
+@media (max-width: 760px) {
+  .body-pad {
+    padding: 18px 16px 24px;
+  }
+
+  /* Percentage column widths will squeeze a table into the viewport until
+     every cell is one character and an ellipsis. The table keeps a width it
+     is readable at and .table-scroll slides it sideways instead. */
+  .table-data {
+    min-width: 680px;
+  }
+
+  /* 14px each side of a 40px column leaves twelve pixels for the text. */
+  .table-data th,
+  .table-data td {
+    padding: 12px 10px;
+    font-size: 14px;
+  }
+
+  .table-data th {
+    font-size: 14px;
+  }
+
+  .modal-backdrop {
+    padding: 16px 12px;
+  }
+
+  .modal-box {
+    padding: 18px 16px;
+  }
+
+  .toast-host {
+    top: calc(var(--topbar-h) + 10px);
+    right: 12px;
+    left: 12px;
+  }
+
+  .toast {
+    max-width: none;
+  }
+}
+
 /* ---------- Page ---------- */
 
 .body-pad {
@@ -936,4 +980,156 @@
 .confirm-actions .btn-console:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
+}
+
+/* ---------- Filter chips ---------- */
+
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Scoped through .chip-row so these outrank the page stylesheets' blanket
+   "every link in this page is ink" rule, which loads after this file. */
+.chip-row .chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: 20px;
+  background: var(--surface);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  text-decoration: none;
+  transition:
+    background-color 0.16s ease,
+    border-color 0.16s ease,
+    color 0.16s ease;
+}
+
+.chip-row .chip:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.chip-row .chip:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.chip-row .chip.active {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #ffffff;
+}
+
+.chip-row .chip-count {
+  font-variant-numeric: tabular-nums;
+  opacity: 0.72;
+}
+
+/* The one filter with work behind it, tinted while it is not the chip in
+   use — selecting it hands it over to the plain active look. */
+.chip-row .chip-waiting:not(.active) {
+  border-color: var(--warn);
+  color: var(--warn);
+  background: var(--warn-soft);
+}
+
+/* ---------- Icon buttons ---------- */
+
+/* 36px, which with the 8px gap keeps a pair of them comfortably apart. The
+   title and aria-label carry the meaning the glyph alone would not. */
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  cursor: pointer;
+  transition:
+    background-color 0.16s ease,
+    border-color 0.16s ease;
+}
+
+.icon-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.icon-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.icon-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.icon-btn.is-good {
+  background: var(--good-soft);
+  border-color: var(--good-soft);
+  color: var(--good);
+}
+
+.icon-btn.is-good:hover:not(:disabled) {
+  background: var(--good);
+  border-color: var(--good);
+  color: #ffffff;
+}
+
+.icon-btn.is-hard {
+  background: var(--hard-soft);
+  border-color: var(--hard-soft);
+  color: var(--hard);
+}
+
+.icon-btn.is-hard:hover:not(:disabled) {
+  background: var(--hard);
+  border-color: var(--hard);
+  color: #ffffff;
+}
+
+.row-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ---------- Prompt field ---------- */
+
+.prompt-label {
+  display: block;
+  margin: 16px 0 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.prompt-text {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 9px;
+  background: var(--surface);
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink);
+  resize: vertical;
+}
+
+.prompt-text:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
 }

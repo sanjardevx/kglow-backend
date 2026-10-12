@@ -10,19 +10,39 @@
         <div class="board">
           <div class="orders-table">
             <div class="section-head">
-              <div class="section-title">Order Confirmation</div>
+              <div class="section-title">Orders</div>
+              <%# The queue's filter. Waiting leads because it is the only one
+                  that needs anything done about it. -%>
+              <nav class="chip-row" aria-label="Filter by status">
+                <% [
+                     { key: 'WAITING_CONFIRMATION', label: 'Waiting' },
+                     { key: 'CONFIRMED', label: 'Confirmed' },
+                     { key: 'REJECTED', label: 'Rejected' },
+                     { key: '', label: 'All' },
+                   ].forEach(function (chip) { %>
+                <a
+                  class="chip <%= status === chip.key ? 'active' : '' %> <%= chip.key === 'WAITING_CONFIRMATION' ? 'chip-waiting' : '' %>"
+                  href="/admin/order/all<%= chip.key ? '?status=' + chip.key : '' %>"
+                  <%= status === chip.key ? 'aria-current="true"' : '' %>
+                >
+                  <%= chip.label %>
+                  <span class="chip-count"><%= counts[chip.key || 'ALL'] || 0 %></span>
+                </a>
+                <% }) %>
+              </nav>
             </div>
             <div class="table-scroll">
               <table class="table-data">
                 <thead>
                   <tr>
-                    <th style="width: 6%">#</th>
-                    <th style="width: 20%">Customer</th>
-                    <th style="width: 18%">Phone</th>
-                    <th style="width: 16%">Total</th>
-                    <th style="width: 16%">Status</th>
-                    <th style="width: 14%">Date</th>
-                    <th style="width: 12%">Action</th>
+                    <th style="width: 5%">#</th>
+                    <th style="width: 17%">Customer</th>
+                    <th style="width: 14%">Phone</th>
+                    <th style="width: 13%">Total</th>
+                    <th style="width: 8%">Proof</th>
+                    <th style="width: 15%">Status</th>
+                    <th style="width: 10%">Date</th>
+                    <th style="width: 18%">Decision</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -38,14 +58,37 @@
                       <span class="sale-chip">&minus;<%= value.orderDiscountPercent %>%</span>
                       <% } %>
                     </td>
+                    <%# The screenshot is what the decision turns on, so it
+                        belongs in the row. Clicking it opens the same detail
+                        modal as View, where it is full size. -%>
                     <td>
-                      <span class="status-pill status-<%= value.orderStatus.toLowerCase() %>">
-                        <%= value.orderStatus %>
+                      <% const proof = (value.paymentProof || [])[0]; %>
+                      <% if (proof) { %>
+                      <button class="proof-thumb view-btn" data-order="<%= value._id %>" type="button" aria-label="Open the payment screenshot">
+                        <img src="/admin/<%= proof %>" alt="" loading="lazy" />
+                      </button>
+                      <% } else { %>
+                      <span class="proof-none" title="No screenshot was sent">—</span>
+                      <% } %>
+                    </td>
+                    <td>
+                      <span class="status-pill status-<%= value.orderStatus.toLowerCase() %>" id="pill-<%= value._id %>">
+                        <%= value.orderStatus === 'WAITING_CONFIRMATION' ? 'WAITING' : value.orderStatus %>
                       </span>
                     </td>
                     <td class="cell-soft"><%= new Date(value.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) %></td>
                     <td>
-                      <button class="btn-outline view-btn" data-order="<%= value._id %>" type="button">View</button>
+                      <div class="row-actions" id="row-actions-<%= value._id %>">
+                        <% if (value.orderStatus === 'WAITING_CONFIRMATION') { %>
+                        <button class="icon-btn is-good row-confirm" data-order="<%= value._id %>" type="button" title="Confirm this order" aria-label="Confirm this order">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7"/></svg>
+                        </button>
+                        <button class="icon-btn is-hard row-reject" data-order="<%= value._id %>" type="button" title="Reject this order" aria-label="Reject this order">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 7 10 10M17 7 7 17"/></svg>
+                        </button>
+                        <% } %>
+                        <button class="btn-outline view-btn" data-order="<%= value._id %>" type="button">View</button>
+                      </div>
                     </td>
                   </tr>
                   <% }) %>
@@ -53,7 +96,7 @@
                 </tbody>
               </table>
             </div>
-            <%- include('includes/pager', { paging: paging, href: '/admin/order/all' }) %>
+            <%- include('includes/pager', { paging: paging, href: '/admin/order/all', query: status ? 'status=' + status + '&' : '' }) %>
           </div>
         </div>
       </div>

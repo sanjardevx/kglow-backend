@@ -124,6 +124,90 @@ function confirmAction({
   });
 }
 
+/**
+ * Asks before something that cannot be undone AND makes the admin write a
+ * reason for it. Resolves the text they wrote, or null if they backed out.
+ *
+ * Separate from confirmAction so neither has to guess what the other returns:
+ * this one always resolves a string or null, that one a boolean.
+ *
+ * @param {{title: string, body?: string, label: string, placeholder?: string,
+ *          confirmLabel?: string, danger?: boolean, empty?: string}} options
+ * @returns {Promise<string|null>}
+ */
+function promptAction({
+  title,
+  body = "",
+  label,
+  placeholder = "",
+  confirmLabel = "Confirm",
+  danger = false,
+  empty = "Please write something first.",
+}) {
+  return new Promise((resolve) => {
+    const backdrop = document.createElement("div");
+    backdrop.className = "modal-backdrop confirm-backdrop open";
+    backdrop.innerHTML = `
+      <div class="modal-box confirm-box" role="dialog" aria-modal="true"
+           aria-labelledby="prompt-title">
+        <div class="title-row">
+          <div class="title" id="prompt-title"></div>
+        </div>
+        <p class="confirm-body"></p>
+        <label class="prompt-label" for="prompt-text"></label>
+        <textarea class="prompt-text" id="prompt-text" rows="3"></textarea>
+        <div class="confirm-actions">
+          <button type="button" class="btn-outline prompt-no">Cancel</button>
+          <button type="button" class="prompt-yes"></button>
+        </div>
+      </div>`;
+
+    backdrop.querySelector("#prompt-title").textContent = title;
+    const bodyNode = backdrop.querySelector(".confirm-body");
+    if (body) bodyNode.textContent = body;
+    else bodyNode.remove();
+
+    backdrop.querySelector(".prompt-label").textContent = label;
+    const field = backdrop.querySelector(".prompt-text");
+    field.placeholder = placeholder;
+
+    const yes = backdrop.querySelector(".prompt-yes");
+    yes.textContent = confirmLabel;
+    yes.className = danger ? "prompt-yes btn-danger" : "prompt-yes btn-console";
+
+    const previous = document.activeElement;
+    const finish = (answer) => {
+      document.removeEventListener("keydown", onKey);
+      backdrop.remove();
+      if (previous && previous.focus) previous.focus();
+      resolve(answer);
+    };
+    const onKey = (e) => {
+      if (e.key === "Escape") finish(null);
+    };
+
+    backdrop.querySelector(".prompt-no").addEventListener("click", () => finish(null));
+    yes.addEventListener("click", () => {
+      const text = field.value.trim();
+      // Kept open rather than closed with a complaint: the words they already
+      // typed are still here, and the fix is one field away.
+      if (!text) {
+        toast(empty, "bad");
+        field.focus();
+        return;
+      }
+      finish(text);
+    });
+    backdrop.addEventListener("click", (e) => {
+      if (e.target === backdrop) finish(null);
+    });
+    document.addEventListener("keydown", onKey);
+
+    document.body.appendChild(backdrop);
+    field.focus();
+  });
+}
+
 /** The message a failed axios call should show: the server's own wording when
  *  it sent one, otherwise the caller's fallback. */
 function errorMessage(err, fallback) {

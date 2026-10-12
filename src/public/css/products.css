@@ -477,3 +477,10 @@
   cursor: default;
 }
 
+
+@media (max-width: 760px) {
+  /* Ten columns: wider than the shared minimum in ops-console.css. */
+  .products-container .table-data {
+    min-width: 860px;
+  }
+}

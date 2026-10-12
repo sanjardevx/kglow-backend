@@ -30,10 +30,49 @@ function settleOrder(orderId, status) {
     .addClass(`status-${status.toLowerCase()}`)
     .text(status);
 
+  // The two decision buttons go; View stays, since a decided order is still
+  // worth opening.
+  $(`#row-actions-${orderId}`).find(".row-confirm, .row-reject").remove();
+
   const $modal = $(`#order-modal-${orderId}`);
   $modal.find(`#decision-${orderId}`).remove();
   $modal.find(`#reject-box-${orderId}`).remove();
   $modal.removeClass("open");
+
+  // The sidebar and the Waiting chip both quote a number that just changed.
+  const $badge = $(".sidebar-badge");
+  const left = Math.max(0, Number($badge.text() || 0) - 1);
+  if (left === 0) $badge.remove();
+  else $badge.text(left);
+  const $chip = $(".chip-waiting .chip-count");
+  if ($chip.length) $chip.text(Math.max(0, Number($chip.text() || 0) - 1));
+}
+
+/** Sends one decision. Shared by the buttons in the row and the ones inside
+ *  the detail modal, so both take exactly the same path to the server. */
+async function decideOrder($button, orderId, orderStatus, rejectReason) {
+  const customer = customerOf(orderId);
+  $button.prop("disabled", true);
+  try {
+    const body = { orderId: orderId, orderStatus: orderStatus };
+    if (rejectReason) body.rejectReason = rejectReason;
+    const response = await axios.post("/admin/order/update", body);
+    if (!response.data.data) {
+      toast("Order update failed.", "bad");
+      return false;
+    }
+    settleOrder(orderId, orderStatus);
+    toast(
+      `Order for ${customer} ${orderStatus === "CONFIRMED" ? "confirmed" : "rejected"}.`,
+    );
+    return true;
+  } catch (err) {
+    console.log(err);
+    toast(errorMessage(err, "Order update failed."), "bad");
+    return false;
+  } finally {
+    $button.prop("disabled", false);
+  }
 }
 
 $(function () {
@@ -52,34 +91,40 @@ $(function () {
     }
   });
 
-  $(".confirm-btn").on("click", async function (e) {
+  /** Confirm, from the row or from inside the detail modal. */
+  $(".confirm-btn, .row-confirm").on("click", async function () {
     const $button = $(this);
-    const orderId = e.target.id.replace("confirm-", "");
-    const customer = customerOf(orderId);
+    const orderId = String($button.data("order") || this.id.replace("confirm-", ""));
 
     const agreed = await confirmAction({
       title: "Confirm this order?",
-      body: `${customer} will be told the payment went through and the stock stays reserved. This cannot be undone.`,
+      body: `${customerOf(orderId)} will be told the payment went through and the stock stays reserved. This cannot be undone.`,
       confirmLabel: "Confirm order",
     });
     if (!agreed) return;
 
-    $button.prop("disabled", true);
-    try {
-      const response = await axios.post("/admin/order/update", {
-        orderId: orderId,
-        orderStatus: "CONFIRMED",
-      });
-      if (response.data.data) {
-        settleOrder(orderId, "CONFIRMED");
-        toast(`Order for ${customer} confirmed.`);
-      } else toast("Order update failed.", "bad");
-    } catch (err) {
-      console.log(err);
-      toast(errorMessage(err, "Order update failed."), "bad");
-    } finally {
-      $button.prop("disabled", false);
-    }
+    await decideOrder($button, orderId, "CONFIRMED");
+  });
+
+  /** Reject from the row. The reason is asked for in the same dialog — the
+   *  shopper sees it on their order, and rejecting without one is what the
+   *  modal's reject box was added to prevent. */
+  $(".row-reject").on("click", async function () {
+    const $button = $(this);
+    const orderId = String($button.data("order"));
+
+    const reason = await promptAction({
+      title: "Reject this order?",
+      body: `${customerOf(orderId)} will see this on their order, and the stock goes back to the shelf.`,
+      label: "Why is this order being rejected?",
+      placeholder: "e.g. The payment screenshot doesn't match the order total.",
+      confirmLabel: "Reject order",
+      danger: true,
+      empty: "Please write why this order is being rejected.",
+    });
+    if (!reason) return;
+
+    await decideOrder($button, orderId, "REJECTED", reason);
   });
 
   /** Reject asks for a reason first: the shopper sees it on their order, so
@@ -107,22 +152,6 @@ $(function () {
       return;
     }
 
-    const $submit = $(this).prop("disabled", true);
-    try {
-      const response = await axios.post("/admin/order/update", {
-        orderId: orderId,
-        orderStatus: "REJECTED",
-        rejectReason: rejectReason,
-      });
-      if (response.data.data) {
-        settleOrder(orderId, "REJECTED");
-        toast(`Order for ${customerOf(orderId)} rejected.`);
-      } else toast("Order update failed.", "bad");
-    } catch (err) {
-      console.log(err);
-      toast(errorMessage(err, "Order update failed."), "bad");
-    } finally {
-      $submit.prop("disabled", false);
-    }
+    await decideOrder($(this), orderId, "REJECTED", rejectReason);
   });
 });

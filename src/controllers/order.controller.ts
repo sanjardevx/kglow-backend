@@ -57,15 +57,26 @@ orderController.getAllOrders = async (req: Request, res: Response) => {
   try {
     console.log("getAllOrders");
     const page = pageFromQuery(req.query.page);
-    const { list, total } = await orderService.getAllOrders(
-      page,
-      ADMIN_PAGE_SIZE,
-    );
-    const paging = pagingFor(total, page);
-    if (page > paging.pages)
-      return res.redirect(`/admin/order/all?page=${paging.pages}`);
+    // Anything that isn't one of the three states means "all of them", so a
+    // hand-typed or stale ?status= shows the whole list rather than nothing.
+    const asked = String(req.query.status ?? "").toUpperCase();
+    const status = Object.values(OrderStatus).find((s) => s === asked);
 
-    res.render("order-confirmation", { orders: list, paging });
+    const [{ list, total }, counts] = await Promise.all([
+      orderService.getAllOrders(page, ADMIN_PAGE_SIZE, status),
+      orderService.countByStatus(),
+    ]);
+    const paging = pagingFor(total, page);
+    const query = status ? `status=${status}&` : "";
+    if (page > paging.pages)
+      return res.redirect(`/admin/order/all?${query}page=${paging.pages}`);
+
+    res.render("order-confirmation", {
+      orders: list,
+      paging,
+      counts,
+      status: status ?? "",
+    });
   } catch (err) {
     console.log("Error on getAllOrders", err);
     sendError(res, err);

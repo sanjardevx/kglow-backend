@@ -1,6 +1,7 @@
 <%#
-  Pages for an admin list. Takes `paging` ({ page, pages, total, size }) and
-  `href` — the list's own path, which the links hang ?page= off.
+  Pages for an admin list. Takes `paging` ({ page, pages, total, size }),
+  `href` — the list's own path — and `query`, anything else the list is
+  filtered by, already in `a=b&` form so paging does not drop the filter.
 
   Deliberately just Previous / Next and a position: the admin works from the
   top of these lists, so a row of numbered pages would be a lot of furniture
@@ -10,7 +11,7 @@
 <nav class="pager" aria-label="Pages">
   <% if (paging.pages > 1) { %>
   <% if (paging.page > 1) { %>
-  <a class="pager-step" href="<%= href %>?page=<%= paging.page - 1 %>" rel="prev">← Previous</a>
+  <a class="pager-step" href="<%= href %>?<%= typeof query === 'undefined' ? '' : query %>page=<%= paging.page - 1 %>" rel="prev">← Previous</a>
   <% } else { %>
   <span class="pager-step is-off" aria-hidden="true">← Previous</span>
   <% } %>
@@ -25,7 +26,7 @@
 
   <% if (paging.pages > 1) { %>
   <% if (paging.page < paging.pages) { %>
-  <a class="pager-step" href="<%= href %>?page=<%= paging.page + 1 %>" rel="next">Next →</a>
+  <a class="pager-step" href="<%= href %>?<%= typeof query === 'undefined' ? '' : query %>page=<%= paging.page + 1 %>" rel="next">Next →</a>
   <% } else { %>
   <span class="pager-step is-off" aria-hidden="true">Next →</span>
   <% } %>

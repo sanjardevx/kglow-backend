@@ -253,15 +253,36 @@ class OrderService {
     return result;
   }
 
-  /** SSR: one page of the admin's order list, newest first, with the total so
-   *  the pager knows how many pages there are. */
+  /** How many orders are in each state, for the queue's filter chips. */
+  public async countByStatus(): Promise<Record<string, number>> {
+    const rows = await this.orderModel
+      .aggregate([{ $group: { _id: "$orderStatus", count: { $sum: 1 } } }])
+      .exec();
+    const counts: Record<string, number> = {};
+    let all = 0;
+    for (const row of rows) {
+      counts[row._id] = row.count;
+      all += row.count;
+    }
+    counts.ALL = all;
+    return counts;
+  }
+
+  /**
+   * SSR: one page of the admin's order list, newest first, with the total so
+   * the pager knows how many pages there are. `status` narrows it to one
+   * state — the queue opens on the orders waiting for a decision.
+   */
   public async getAllOrders(
     page: number,
     size: number,
+    status?: OrderStatus,
   ): Promise<{ list: Order[]; total: number }> {
-    const total = await this.orderModel.countDocuments().exec();
+    const match = status ? { orderStatus: status } : {};
+    const total = await this.orderModel.countDocuments(match).exec();
     const result = await this.orderModel
       .aggregate([
+        { $match: match },
         { $sort: { createdAt: -1 } },
         { $skip: skipFor(page, size) },
         { $limit: size },

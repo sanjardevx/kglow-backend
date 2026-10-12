@@ -32,8 +32,8 @@ export const signupLimiter = rateLimit({
 /**
  * The admin forms answer a wrong password with a 200 and an alert, so there
  * is no failure status to count on — every attempt counts instead, which one
- * advisor never comes close to. Answered in the same alert-and-return style
- * the login page already uses.
+ * advisor never comes close to. Answered by re-rendering the login page with
+ * the reason as a toast, so the 429 is kept rather than traded for a redirect.
  */
 export const adminAuthLimiter = rateLimit({
   windowMs: 15 * MINUTE,
@@ -43,8 +43,8 @@ export const adminAuthLimiter = rateLimit({
   handler: (req: Request, res: Response) => {
     res
       .status(HttpCode.TOO_MANY_REQUESTS)
-      .send(
-        `<script>alert("${Message.TOO_MANY_ATTEMPTS}"); window.location.replace('/admin/login') </script>`,
-      );
+      .render("login", {
+        notice: { kind: "bad", message: Message.TOO_MANY_ATTEMPTS },
+      });
   },
 });

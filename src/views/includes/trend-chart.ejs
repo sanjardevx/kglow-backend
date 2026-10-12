@@ -1,0 +1,100 @@
+<%#
+  Confirmed revenue per day. One series, so one hue and no legend — the panel
+  heading above already says what is plotted.
+
+  Drawn as SVG here rather than by a charting library: the admin loads no
+  chart code, the bars are in the HTML the server already sends, and nothing
+  new has to be allowed through the content security policy.
+
+  Takes `days` — [{ day, label, total }], oldest first.
+-%>
+<%
+  const W = 760, H = 210;
+  const PAD = { top: 14, right: 8, bottom: 26, left: 52 };
+  const plotW = W - PAD.left - PAD.right;
+  const plotH = H - PAD.top - PAD.bottom;
+
+  const peak = Math.max(...days.map(function (d) { return d.total; }), 0);
+  // A round ceiling just above the tallest bar, so the top gridline is a
+  // number worth reading. Stepped rather than rounded up to the next power of
+  // ten — a peak of 1.48M under a 2M ceiling wastes a quarter of the height
+  // and makes every bar look smaller than it is.
+  const STEPS = [1, 1.2, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10];
+  function ceiling(value) {
+    if (value <= 0) return 1;
+    const magnitude = Math.pow(10, Math.floor(Math.log10(value)));
+    const step = STEPS.find(function (s) { return s >= value / magnitude; });
+    return step * magnitude;
+  }
+  const top = ceiling(peak);
+
+  function compact(n) {
+    if (n >= 1000000) return (n / 1000000).toFixed(n >= 10000000 ? 0 : 1).replace(/\.0$/, "") + "M";
+    if (n >= 1000) return Math.round(n / 1000) + "K";
+    return String(n);
+  }
+
+  const band = plotW / days.length;
+  const barW = Math.min(24, band - 10);
+  const y = function (value) { return PAD.top + plotH - (value / top) * plotH; };
+
+  /** A column: rounded at the data end, square where it meets the baseline. */
+  function column(x, value) {
+    const base = PAD.top + plotH;
+    const topY = y(value);
+    const h = base - topY;
+    if (h <= 0.5) return "";
+    const r = Math.min(4, barW / 2, h);
+    return [
+      "M", x, base,
+      "L", x, topY + r,
+      "Q", x, topY, x + r, topY,
+      "L", x + barW - r, topY,
+      "Q", x + barW, topY, x + barW, topY + r,
+      "L", x + barW, base, "Z",
+    ].join(" ");
+  }
+
+  const peakIndex = days.findIndex(function (d) { return d.total === peak; });
+-%>
+
+<% if (peak === 0) { %>
+<p class="chart-empty">No confirmed orders in the last <%= days.length %> days.</p>
+<% } else { %>
+<svg
+  class="chart"
+  viewBox="0 0 <%= W %> <%= H %>"
+  role="img"
+  aria-label="Confirmed revenue per day for the last <%= days.length %> days. The highest was <%= peak.toLocaleString('en-US') %> on <%= days[peakIndex].label %>."
+>
+  <%# Gridlines: solid hairlines one step off the surface, never dashed. -%>
+  <% [0, 0.5, 1].forEach(function (fraction) { const value = top * fraction; %>
+  <line
+    class="chart-grid"
+    x1="<%= PAD.left %>" x2="<%= W - PAD.right %>"
+    y1="<%= y(value) %>" y2="<%= y(value) %>"
+  />
+  <text class="chart-tick" x="<%= PAD.left - 10 %>" y="<%= y(value) + 4 %>" text-anchor="end"><%= compact(value) %></text>
+  <% }) %>
+
+  <% days.forEach(function (d, i) { const x = PAD.left + i * band + (band - barW) / 2; %>
+  <% if (d.total > 0) { %>
+  <path class="chart-bar" d="<%= column(x, d.total) %>">
+    <title><%= d.label %>: <%= d.total.toLocaleString('en-US') %> so'm</title>
+  </path>
+  <% } %>
+  <%# Labelled every third day so the row never crowds; the hover title and
+      the axis carry the rest. The last day earns one too, unless it would sit
+      right beside the one before it. -%>
+  <% const lastRegular = Math.floor((days.length - 1) / 3) * 3;
+     const isLast = i === days.length - 1;
+     if (i % 3 === 0 || (isLast && i - lastRegular >= 2)) { %>
+  <text class="chart-tick" x="<%= x + barW / 2 %>" y="<%= H - 8 %>" text-anchor="middle"><%= d.label %></text>
+  <% } %>
+  <% }) %>
+
+  <%# One direct label, on the busiest day. A number on every bar goes unread. -%>
+  <% const px = PAD.left + peakIndex * band + (band - barW) / 2; %>
+  <text class="chart-peak" x="<%= px + barW / 2 %>" y="<%= y(peak) - 7 %>" text-anchor="middle"><%= compact(peak) %></text>
+</svg>
+<% } %>

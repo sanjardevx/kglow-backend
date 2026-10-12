@@ -1,0 +1,185 @@
+<%- include('includes/header') %>
+
+<link rel="stylesheet" type="text/css" href="/css/dashboard.css" />
+
+<body>
+  <div class="admin-page">
+    <%- include('includes/nav', { active: 'home' }) %>
+    <div class="body-pad">
+      <%
+        function money(n) { return Number(n || 0).toLocaleString('en-US'); }
+
+        /** Change against the previous window of the same length. Returns null
+         *  where there is nothing to compare against — "+100%" from a month
+         *  with no orders says less than saying nothing. */
+        function delta(now, before) {
+          if (!before) return null;
+          return Math.round(((now - before) / before) * 100);
+        }
+
+        function ago(date) {
+          const hours = Math.floor((Date.now() - new Date(date).getTime()) / 3600000);
+          if (hours < 1) return 'just now';
+          if (hours < 24) return hours + 'h ago';
+          const d = Math.floor(hours / 24);
+          return d + (d === 1 ? ' day ago' : ' days ago');
+        }
+
+        const revenueDelta = delta(data.revenue.value, data.revenue.previous);
+        const ordersDelta = delta(data.orders.value, data.orders.previous);
+        const topUnits = Math.max(...data.topProducts.map(function (p) { return p.units; }), 0);
+      %>
+
+      <div class="page-head">
+        <h1 class="page-title">Dashboard</h1>
+        <p class="page-sub">Money and orders over the last 30 days.</p>
+      </div>
+
+      <!-- The one figure the panel leads with, then the three that qualify it. -->
+      <section class="kpi-row" aria-label="Key figures">
+        <div class="card kpi kpi-hero">
+          <span class="kpi-label">Revenue, confirmed</span>
+          <span class="kpi-hero-value"><%= money(data.revenue.value) %></span>
+          <span class="kpi-unit">so'm · last 30 days</span>
+          <% if (revenueDelta !== null) { %>
+          <span class="kpi-delta <%= revenueDelta >= 0 ? 'up' : 'down' %>">
+            <%= revenueDelta >= 0 ? '+' : '−' %><%= Math.abs(revenueDelta) %>% vs the 30 before
+          </span>
+          <% } %>
+        </div>
+
+        <div class="card kpi">
+          <span class="kpi-label">Orders placed</span>
+          <span class="kpi-value"><%= data.orders.value %></span>
+          <% if (ordersDelta !== null) { %>
+          <span class="kpi-delta <%= ordersDelta >= 0 ? 'up' : 'down' %>">
+            <%= ordersDelta >= 0 ? '+' : '−' %><%= Math.abs(ordersDelta) %>% vs the 30 before
+          </span>
+          <% } else { %>
+          <span class="kpi-foot">last 30 days</span>
+          <% } %>
+        </div>
+
+        <a class="card kpi kpi-link <%= data.waitingCount > 0 ? 'is-warn' : '' %>" href="/admin/order/all">
+          <span class="kpi-label">Waiting for you</span>
+          <span class="kpi-value"><%= data.waitingCount %></span>
+          <span class="kpi-foot"><%= data.waitingCount === 1 ? 'order to decide' : 'orders to decide' %></span>
+        </a>
+
+        <a class="card kpi kpi-link <%= data.lowStock.length > 0 ? 'is-hard' : '' %>" href="/admin/product/all">
+          <span class="kpi-label">Running out</span>
+          <span class="kpi-value"><%= data.lowStock.length %></span>
+          <span class="kpi-foot"><%= lowStockAt %> or fewer left</span>
+        </a>
+      </section>
+
+      <div class="dash-grid">
+        <!-- Oldest first: the order that has waited longest is the one a
+             shopper is still sitting in front of. -->
+        <section class="card panel panel-wide">
+          <div class="panel-head">
+            <h2 class="panel-title">Needs a decision</h2>
+            <% if (data.waitingOldest.length) { %>
+            <a class="panel-link" href="/admin/order/all">Open the queue →</a>
+            <% } %>
+          </div>
+          <% if (!data.waitingOldest.length) { %>
+          <p class="panel-empty">Nothing is waiting. Every order has been decided.</p>
+          <% } else { %>
+          <ul class="row-list">
+            <% data.waitingOldest.forEach(function (order) { %>
+            <li class="row-item">
+              <span class="row-main"><%= order.memberNick %></span>
+              <span class="row-meta"><%= ago(order.createdAt) %></span>
+              <span class="row-value"><%= money(order.orderTotal) %></span>
+            </li>
+            <% }) %>
+          </ul>
+          <% } %>
+        </section>
+
+        <section class="card panel panel-wide">
+          <div class="panel-head">
+            <h2 class="panel-title">Running out of stock</h2>
+            <a class="panel-link" href="/admin/product/all">Products →</a>
+          </div>
+          <% if (!data.lowStock.length) { %>
+          <p class="panel-empty">Every product on sale has more than <%= lowStockAt %> left.</p>
+          <% } else { %>
+          <ul class="row-list">
+            <% data.lowStock.forEach(function (product) { %>
+            <li class="row-item">
+              <span class="row-main" title="<%= product.productName %>"><%= product.productName %></span>
+              <span class="row-meta"><%= product.productBrand %></span>
+              <span class="row-value <%= product.productLeftCount === 0 ? 'is-hard' : 'is-warn' %>">
+                <%= product.productLeftCount === 0 ? 'Sold out' : product.productLeftCount + ' left' %>
+              </span>
+            </li>
+            <% }) %>
+          </ul>
+          <% } %>
+        </section>
+
+        <section class="card panel panel-chart">
+          <div class="panel-head">
+            <h2 class="panel-title">Confirmed revenue per day</h2>
+            <span class="panel-note">so'm · last 14 days</span>
+          </div>
+          <%- include('includes/trend-chart', { days: data.revenueByDay }) %>
+        </section>
+
+        <section class="card panel">
+          <div class="panel-head">
+            <h2 class="panel-title">How orders ended</h2>
+            <span class="panel-note">all time</span>
+          </div>
+          <!-- Each state carries an icon and its name as well as its colour,
+               so the three never rest on colour alone. -->
+          <ul class="status-list">
+            <li class="status-item is-warn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7.5V12l3 2"/></svg>
+              <span class="status-name">Waiting</span>
+              <span class="status-count"><%= data.statusCounts.waiting %></span>
+            </li>
+            <li class="status-item is-good">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8.5 12.5 2.5 2.5 4.5-5"/></svg>
+              <span class="status-name">Confirmed</span>
+              <span class="status-count"><%= data.statusCounts.confirmed %></span>
+            </li>
+            <li class="status-item is-hard">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m9 9 6 6M15 9l-6 6"/></svg>
+              <span class="status-name">Rejected</span>
+              <span class="status-count"><%= data.statusCounts.rejected %></span>
+            </li>
+          </ul>
+        </section>
+
+        <!-- By units rather than by money: this answers "what do I reorder",
+             and a cheap product shifting in volume matters to that. -->
+        <section class="card panel panel-full">
+          <div class="panel-head">
+            <h2 class="panel-title">Selling fastest</h2>
+            <span class="panel-note">units · last 30 days</span>
+          </div>
+          <% if (!data.topProducts.length) { %>
+          <p class="panel-empty">No confirmed orders in the last 30 days.</p>
+          <% } else { %>
+          <ul class="bar-list">
+            <% data.topProducts.forEach(function (product) { %>
+            <li class="bar-row">
+              <span class="bar-name" title="<%= product.productName %>"><%= product.productName %></span>
+              <span class="bar-track">
+                <span class="bar-fill" style="width: <%= Math.max(2, (product.units / topUnits) * 100) %>%"></span>
+              </span>
+              <span class="bar-value"><%= product.units %></span>
+            </li>
+            <% }) %>
+          </ul>
+          <% } %>
+        </section>
+      </div>
+    </div>
+  </div>
+</body>
+
+<%- include('includes/footer') %>

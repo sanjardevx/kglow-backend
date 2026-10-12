@@ -164,7 +164,7 @@ describe("admin", () => {
 
     // and admin pages turn away anyone without that session
     const anonymous = await request(ctx.app).get("/admin/user/all");
-    expect(anonymous.text).toContain("not authenticated");
+    expect(anonymous.headers.location).toBe("/admin/login");
     expect((await admin.get("/admin/user/all")).text).toContain("shopper");
   });
 

@@ -1,77 +1,106 @@
-<nav class="nav">
-  <div class="nav-inner">
-    <a href="/admin" class="logo">K-GLOW ADMIN</a>
+<%#
+  The admin shell: a sidebar on a desktop screen, a top bar and a drawer on
+  anything narrower. Takes `active` — the key of the page including it.
 
-    <% if (member) { %>
+  Kept at the name `nav` so every view's `include('includes/nav', ...)` line
+  still means "put the navigation here". The sidebar is fixed, so the page's
+  own container only has to leave room for it — see .admin-page in
+  ops-console.css.
+-%>
+<% const items = [
+     { key: 'home',      href: '/admin',               label: 'Dashboard' },
+     { key: 'orders',    href: '/admin/order/all',     label: 'Orders' },
+     { key: 'products',  href: '/admin/product/all',   label: 'Products' },
+     { key: 'reviews',   href: '/admin/review/all',    label: 'Reviews' },
+     { key: 'tutorials', href: '/admin/tutorial/all',  label: 'Tutorials' },
+     { key: 'discount',  href: '/admin/discount',      label: 'Discount' },
+     { key: 'users',     href: '/admin/user/all',      label: 'Users' },
+   ];
+   const current = items.find(function (i) { return i.key === active; }); -%>
 
-      <div class="links">
-        <a href="/admin" class="<%= active === 'home' ? 'active' : '' %>">
-          Home
-        </a>
+<% if (member) { %>
+<!-- Narrow screens: the sidebar is off-canvas, so this carries the way back
+     to it and says which page you are on. -->
+<header class="topbar">
+  <button
+    type="button"
+    class="topbar-menu"
+    id="sidebar-open"
+    aria-label="Open the menu"
+    aria-expanded="false"
+    aria-controls="sidebar"
+  >
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <span class="topbar-title"><%= current ? current.label : 'K-Glow Admin' %></span>
+  <% if (typeof waitingCount !== 'undefined' && waitingCount > 0) { %>
+  <a class="topbar-waiting" href="/admin/order/all">
+    <%= waitingCount %> waiting
+  </a>
+  <% } %>
+</header>
 
-        <a href="/admin/order/all" class="<%= active === 'orders' ? 'active' : '' %>">
-          Order Confirmation
-        </a>
+<div class="sidebar-scrim" id="sidebar-scrim" hidden></div>
 
-        <a href="/admin/product/all" class="<%= active === 'products' ? 'active' : '' %>">
-          Products
-        </a>
-
-        <a href="/admin/review/all" class="<%= active === 'reviews' ? 'active' : '' %>">
-          Reviews
-        </a>
-
-        <a href="/admin/tutorial/all" class="<%= active === 'tutorials' ? 'active' : '' %>">
-          Tutorials
-        </a>
-
-        <a href="/admin/discount" class="<%= active === 'discount' ? 'active' : '' %>">
-          Discount
-        </a>
-
-        <a href="/admin/user/all" class="<%= active === 'users' ? 'active' : '' %>">
-          Users
-        </a>
-      </div>
-
-      <div class="right">
-        <span class="who"><%= member.memberNick %></span>
-
-        <span class="sep">|</span>
-
-        <a
-          href="/admin/logout"
-          class="logout-link"
-          onclick="return confirm('Do you want to logout?')"
-        >
-          <svg
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-            <polyline points="16 17 21 12 16 7"/>
-            <line x1="21" y1="12" x2="9" y2="12"/>
-          </svg>
-
-          Logout
-        </a>
-      </div>
-
-    <% } else { %>
-
-      <div class="links">
-        <a href="/admin/signup">Signup</a>
-        <a href="/admin/login">Login</a>
-      </div>
-
-      <div class="right"></div>
-
-    <% } %>
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-head">
+    <a href="/admin" class="sidebar-logo">K&#8209;GLOW<span>admin</span></a>
+    <button type="button" class="sidebar-close" id="sidebar-close" aria-label="Close the menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
   </div>
-</nav>
+
+  <nav class="sidebar-nav" aria-label="Sections">
+    <% items.forEach(function (item) { %>
+    <a
+      href="<%= item.href %>"
+      class="sidebar-link <%= active === item.key ? 'active' : '' %>"
+      <%= active === item.key ? 'aria-current="page"' : '' %>
+    >
+      <span class="sidebar-icon" aria-hidden="true">
+        <% if (item.key === 'home') { %>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+        <% } else if (item.key === 'orders') { %>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6a1 1 0 0 1 1 1v1H8V4a1 1 0 0 1 1-1Z"/><path d="M16 5h2a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h2"/><path d="m9 13 2 2 4-4"/></svg>
+        <% } else if (item.key === 'products') { %>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z"/><path d="m4 7.5 8 4.5 8-4.5"/><path d="M12 12v9"/></svg>
+        <% } else if (item.key === 'reviews') { %>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m12 4 2.4 4.9 5.4.8-3.9 3.8.9 5.4-4.8-2.6-4.8 2.6.9-5.4L4.2 9.7l5.4-.8L12 4Z"/></svg>
+        <% } else if (item.key === 'tutorials') { %>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="3"/><path d="m10 9.5 5 2.5-5 2.5v-5Z"/></svg>
+        <% } else if (item.key === 'discount') { %>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4 12 22l-9-9V4a1 1 0 0 1 1-1h9l7.6 7.6a2 2 0 0 1 0 2.8Z"/><circle cx="7.5" cy="7.5" r="1.3"/></svg>
+        <% } else { %>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 20v-1.5a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4V20"/><circle cx="9.5" cy="7.5" r="3.5"/><path d="M21 20v-1.5a4 4 0 0 0-3-3.9"/><path d="M15.5 4.1a4 4 0 0 1 0 7"/></svg>
+        <% } %>
+      </span>
+      <span class="sidebar-label"><%= item.label %></span>
+      <% if (item.key === 'orders' && typeof waitingCount !== 'undefined' && waitingCount > 0) { %>
+      <span class="sidebar-badge" title="<%= waitingCount %> waiting for a decision"><%= waitingCount %></span>
+      <% } %>
+    </a>
+    <% }) %>
+  </nav>
+
+  <!-- Below the rule and away from the sections: logging out ends the
+       session, and it should not sit a mis-click from Users. -->
+  <div class="sidebar-foot">
+    <span class="sidebar-who"><%= member.memberNick %></span>
+    <a href="/admin/logout" class="sidebar-logout" id="logout-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Log out
+    </a>
+  </div>
+</aside>
+
+<% } else { %>
+
+<header class="topbar signed-out">
+  <a href="/admin" class="sidebar-logo">K&#8209;GLOW<span>admin</span></a>
+  <nav class="topbar-auth" aria-label="Account">
+    <a href="/admin/signup">Signup</a>
+    <a href="/admin/login">Login</a>
+  </nav>
+</header>
+
+<% } %>

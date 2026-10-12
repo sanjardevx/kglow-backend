@@ -12,19 +12,31 @@ import {
   pagingFor,
 } from "../libs/utils/paging";
 import { redirectWithNotice } from "../libs/utils/notice";
+import DashboardService, { LOW_STOCK_AT } from "../models/Dashboard.service";
 
 const memberService = new MemberService(); // create instance of the service
 
+const dashboardService = new DashboardService();
+
 const adminController: T = {};
 
-adminController.goHome = (req: Request, res: Response) => {
+/**
+ * /admin — the dashboard. Signed out this is just the way to the login page:
+ * there is nothing here for anyone else, and the panel's own front door used
+ * to be an animation of the word "K-GLOW" with no information on it at all.
+ */
+adminController.goHome = async (req: AdminRequest, res: Response) => {
   try {
     console.log("goHome");
-    res.render("home");
-    // response options: send | json | redirect | end | render
+    if (req.session?.member?.memberType !== MemberType.ADVISOR)
+      return res.redirect("/admin/login");
+
+    const data = await dashboardService.getDashboard();
+    res.render("dashboard", { data, lowStockAt: LOW_STOCK_AT });
   } catch (err) {
     console.log("Error on goHome", err);
-    res.redirect("/admin");
+    if (!(err instanceof Errors)) reportError(err);
+    res.redirect("/admin/login");
   }
 };
 
@@ -151,10 +163,7 @@ adminController.verifyAdvisor = (
     req.member = req.session.member;
     next();
   } else {
-    const message = Message.NOT_AUTHENTICATED;
-    res.send(
-      `<script> alert("${message}"); window.location.replace('/admin/login'); </script>`,
-    );
+    redirectWithNotice(req, res, "/admin/login", "bad", Message.NOT_AUTHENTICATED);
   }
 };
 

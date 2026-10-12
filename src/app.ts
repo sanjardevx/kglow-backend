@@ -23,6 +23,8 @@ import { T } from "./libs/types/common";
 import Errors, { HttpCode, Message } from "./libs/Errors";
 import { reportError, sendError } from "./libs/utils/monitoring";
 import { takeNotice } from "./libs/utils/notice";
+import OrderModel from "./schema/Order.model";
+import { OrderStatus } from "./libs/enums/order.enum";
 
 const MongoDBStore = ConnectMongoDB(session);
 const store = new MongoDBStore({
@@ -66,16 +68,16 @@ app.use(
         // `<script>alert(...)</script>` replies, so inline scripts stay allowed
         // for now. What this still buys: scripts only from these hosts, no
         // plugins, and no framing of the admin panel by another site.
-        // One host per script the admin still loads: jQuery, axios, anime.js
-        // and the two embeds. jsdelivr and code.jquery.com left with
-        // Bootstrap's JS, Popper and the slim jQuery; jsdelivr still serves
-        // Bootstrap's stylesheet, which style-src covers, not this.
+        // One host per script the admin still loads: jQuery, axios and the
+        // two embeds. jsdelivr and code.jquery.com left with Bootstrap's JS,
+        // Popper and the slim jQuery; esm.sh left with the anime.js splash
+        // the dashboard replaced. jsdelivr still serves Bootstrap's
+        // stylesheet, which style-src covers, not this.
         "script-src": [
           "'self'",
           "'unsafe-inline'",
           "https://ajax.googleapis.com",
           "https://unpkg.com",
-          "https://esm.sh",
           "https://www.youtube.com",
           "https://www.instagram.com",
         ],
@@ -153,12 +155,26 @@ app.use(
 );
 
 
-app.use("/admin", function (req, res, next) {
+app.use("/admin", async function (req, res, next) {
   const sessionInstance = req.session as T;
   res.locals.member = sessionInstance.member;
   // A message left by the handler that redirected here, shown once as a toast
   // and then gone — see libs/utils/notice.ts.
   res.locals.notice = takeNotice(req);
+
+  // How many orders are waiting for a decision — the sidebar carries it on
+  // every page, so the admin never has to open the list to find out. One
+  // indexed count, and only once there is an admin to show it to.
+  if (sessionInstance.member) {
+    try {
+      res.locals.waitingCount = await OrderModel.countDocuments({
+        orderStatus: OrderStatus.WAITING_CONFIRMATION,
+      }).exec();
+    } catch (err) {
+      console.log("Could not count waiting orders", err);
+      res.locals.waitingCount = 0;
+    }
+  }
   next();
 });
 

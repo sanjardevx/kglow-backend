@@ -9,7 +9,9 @@
   background: var(--bg);
 }
 
-.orders-container a {
+/* Scoped to the page's own content: the sidebar lives in this
+   container too, and its links are light on a dark panel. */
+.orders-container .body-pad a {
   text-decoration: none;
   color: var(--ink);
 }
@@ -26,11 +28,13 @@
 
 .orders-container .board {
   position: relative;
-  width: 1320px;
+  /* Was a fixed width wider than the container that held it, which clipped
+     the first column off the left on any screen narrower than it. */
+  width: 100%;
   height: auto;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
 }
 
 .orders-container .orders-table {

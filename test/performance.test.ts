@@ -41,6 +41,15 @@ describe("indexes", () => {
     expect(plan).not.toContain('"stage":"SORT"');
   });
 
+  it("count the orders waiting for a decision without reading them all", async () => {
+    const plan = await planOf(
+      OrderModel.find({ orderStatus: "WAITING_CONFIRMATION" }).sort({ createdAt: 1 }),
+    );
+    expect(plan).toContain("IXSCAN");
+    expect(plan).not.toContain("COLLSCAN");
+    expect(plan).not.toContain('"stage":"SORT"');
+  });
+
   it("find an order's lines without scanning every line ever sold", async () => {
     const plan = await planOf(OrderItemModel.find({ orderId: new mongoose.Types.ObjectId() }));
     expect(plan).toContain("IXSCAN");

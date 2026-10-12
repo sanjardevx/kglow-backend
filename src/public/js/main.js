@@ -141,3 +141,63 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("Could not read the page notice", err);
   }
 });
+
+/**
+ * The sidebar drawer, below 1024px. Above it the sidebar is simply part of the
+ * page and none of this runs — the buttons are not on screen and the classes
+ * these toggle have no effect at that width.
+ */
+document.addEventListener("DOMContentLoaded", () => {
+  const sidebar = document.getElementById("sidebar");
+  const scrim = document.getElementById("sidebar-scrim");
+  const openButton = document.getElementById("sidebar-open");
+  const closeButton = document.getElementById("sidebar-close");
+  if (!sidebar || !scrim || !openButton) return;
+
+  function setOpen(open) {
+    sidebar.classList.toggle("open", open);
+    scrim.classList.toggle("open", open);
+    scrim.hidden = !open;
+    openButton.setAttribute("aria-expanded", String(open));
+    // The page behind must not scroll under the drawer.
+    document.body.style.overflow = open ? "hidden" : "";
+    // On the next frame: the panel is still visibility:hidden in the style
+    // the browser has computed at this point, and a hidden element refuses
+    // focus, so calling it now would silently leave focus on the button.
+    if (open)
+      requestAnimationFrame(() => sidebar.querySelector(".sidebar-link")?.focus());
+    else openButton.focus();
+  }
+
+  openButton.addEventListener("click", () => setOpen(true));
+  closeButton?.addEventListener("click", () => setOpen(false));
+  scrim.addEventListener("click", () => setOpen(false));
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && sidebar.classList.contains("open")) setOpen(false);
+  });
+
+  // Back at desktop width the drawer's state is meaningless, and leaving the
+  // body locked would freeze the page.
+  window.matchMedia("(min-width: 1024px)").addEventListener("change", (e) => {
+    if (e.matches) {
+      sidebar.classList.remove("open");
+      scrim.classList.remove("open");
+      scrim.hidden = true;
+      document.body.style.overflow = "";
+    }
+  });
+});
+
+/** Logging out ends the session, so it asks first. */
+document.addEventListener("DOMContentLoaded", () => {
+  const logout = document.getElementById("logout-link");
+  logout?.addEventListener("click", async (e) => {
+    e.preventDefault();
+    const agreed = await confirmAction({
+      title: "Log out?",
+      body: "You'll need to sign in again to get back into the panel.",
+      confirmLabel: "Log out",
+    });
+    if (agreed) window.location.href = logout.getAttribute("href");
+  });
+});

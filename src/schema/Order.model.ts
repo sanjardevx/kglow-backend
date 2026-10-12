@@ -78,6 +78,9 @@ const orderSchema = new Schema(
 orderSchema.index({ memberId: 1, orderStatus: 1, createdAt: -1 });
 // The admin's order list, newest first.
 orderSchema.index({ createdAt: -1 });
+// The waiting-orders badge counts this on every admin page, and the dashboard
+// pulls the oldest few off the front of it.
+orderSchema.index({ orderStatus: 1, createdAt: 1 });
 
 // Untyped on purpose: mongoose 6.13 infers document types the services'
 // interfaces don't match yet (their ObjectId is the schema type). Kept as

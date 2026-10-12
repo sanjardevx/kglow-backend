@@ -19,6 +19,7 @@ import { loginLimiter, signupLimiter } from "./libs/utils/rateLimiter";
 //** Member **/
 router.post("/member/login", loginLimiter, memberController.login);
 router.post("/member/signup", signupLimiter, memberController.signup);
+router.post("/member/google", loginLimiter, memberController.googleAuth);
 router.post(
   "/member/logout",
   memberController.verifyAuth,
@@ -39,6 +40,8 @@ router.get("/member/top-users", memberController.getTopUsers);
 
 //** Product **/
 router.get("/product/all", productController.getProducts);
+// Before /product/:id, or "stats" would be read as a product id.
+router.get("/product/stats", productController.getCatalogStats);
 router.get(
   "/product/:id",
   memberController.retrieveAuth,

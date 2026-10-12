@@ -30,6 +30,30 @@ class ProductService {
   }
 
   /** SPA */
+  /**
+   * The homepage's "brands carried" and "products" figures, counted from the
+   * catalog itself so they can never drift from what the shop actually shows.
+   * Same visibility as the shop list: sold-out products count, deleted don't.
+   * Brands are compared on letters and digits alone — the catalog has both
+   * "DR.ALTHEA" and "Dr. Althea", which are one brand typed twice.
+   */
+  public async getCatalogStats(): Promise<{
+    productCount: number;
+    brandCount: number;
+  }> {
+    const visible = {
+      productStatus: { $in: [ProductStatus.PROCESS, ProductStatus.PAUSE] },
+    };
+    const [productCount, brands] = await Promise.all([
+      this.productModel.countDocuments(visible).exec(),
+      this.productModel.distinct("productBrand", visible).exec(),
+    ]);
+    const brandKeys = new Set(
+      brands.map((brand: string) => brand.toLowerCase().replace(/[^a-z0-9]/g, "")),
+    );
+    return { productCount, brandCount: brandKeys.size };
+  }
+
   public async getProducts(inquiry: ProductInquiry): Promise<Product[]> {
     // PROCESS = in stock, PAUSE = sold out (still shown, frontend renders the
     // "Sold Out" badge and disables purchase actions). DELETE is the only

@@ -69,6 +69,14 @@ describe("product list", () => {
   });
 });
 
+describe("catalog stats", () => {
+  it("counts what the shop shows, and each brand once", async () => {
+    const res = await get("/product/stats").expect(200);
+    // 105 seeded, the deleted one left out; Missha and Cosrx.
+    expect(res.body).toEqual({ productCount: 105, brandCount: 2 });
+  });
+});
+
 describe("search", () => {
   it("matches name or brand, ignoring case", async () => {
     const byName = (await get("/product/all?page=1&limit=100&search=toner%2010")).body;

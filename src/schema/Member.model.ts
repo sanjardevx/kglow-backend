@@ -32,7 +32,22 @@ const memberSchema = new Schema(
     memberPassword: {
       type: String,
       select: false, // IMPORTANT: password is hidden by default in all queries
-      required: true,
+      // Members who joined with Google never set one — Google vouches for them.
+      required: function (this: { memberGoogleId?: string }) {
+        return !this.memberGoogleId;
+      },
+    },
+
+    // Google's id for the account ("sub" in its token): the stable link
+    // between a Google sign-in and this member. Email can change; this can't.
+    memberGoogleId: {
+      type: String,
+      index: { unique: true, sparse: true },
+      select: false,
+    },
+
+    memberEmail: {
+      type: String, // from Google, when they signed in with it
     },
 
     memberAddress: {

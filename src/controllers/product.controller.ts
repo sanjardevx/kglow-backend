@@ -36,6 +36,16 @@ productController.getProducts = async (req: Request, res: Response) => {
   }
 };
 
+productController.getCatalogStats = async (req: Request, res: Response) => {
+  try {
+    const result = await productService.getCatalogStats();
+    res.status(HttpCode.OK).json(result);
+  } catch (err) {
+    console.log("Error on getCatalogStats", err);
+    sendError(res, err);
+  }
+};
+
 productController.getProduct = async (req: ExtendenRequest, res: Response) => {
   try {
     console.log("getProduct");

@@ -59,6 +59,10 @@ export const signupInput = z.object({
     .max(72, Message.PASSWORD_LENGTH),
 });
 
+export const googleInput = z.object({
+  credential: z.string().min(20).max(5000),
+});
+
 export const loginInput = z.object({
   memberNick: z.string().min(1).max(100),
   memberPassword: z.string().min(1).max(200),

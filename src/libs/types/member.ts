@@ -10,6 +10,7 @@ export interface Member {
   memberNick: string;
   memberPhone?: string;
   memberPassword?: string;
+  memberEmail?: string;
   memberAddress?: string;
   memberDesc?: string;
   memberImage?: string;

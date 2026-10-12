@@ -14,12 +14,14 @@ import { AUTH_TIMER } from "../libs/config";
 import jwt from "jsonwebtoken";
 import { MemberType } from "../libs/enums/member.enum";
 import {
+  googleInput,
   loginInput,
   memberUpdateInput,
   parseInput,
   signupInput,
 } from "../libs/validation";
 import { sendError } from "../libs/utils/monitoring";
+import { verifyGoogleCredential } from "../libs/utils/google";
 
 const memberService = new MemberService();
 const authService = new AuthService();
@@ -88,6 +90,32 @@ memberController.login = async (req: Request, res: Response) => {
     res.status(HttpCode.OK).json({ member: result, accessToken: token });
   } catch (err) {
     console.log("Error on login", err);
+    sendError(res, err);
+  }
+};
+
+/** Sign in or sign up with Google — the SPA's Google button posts the ID
+ *  token it got from Google here. */
+memberController.googleAuth = async (req: Request, res: Response) => {
+  try {
+    console.log("googleAuth");
+    const { credential } = parseInput(googleInput, req.body);
+    const profile = await verifyGoogleCredential(credential);
+    const { member, isNew } = await memberService.googleSignIn(profile);
+    const token = await authService.createToken(member);
+
+    res.cookie("accessToken", token, {
+      maxAge: AUTH_TIMER * 3600 * 1000,
+      httpOnly: false,
+      sameSite: "none",
+      secure: true,
+    });
+
+    res
+      .status(isNew ? HttpCode.CREATED : HttpCode.OK)
+      .json({ member, accessToken: token, isNew });
+  } catch (err) {
+    console.log("Error on googleAuth", err);
     sendError(res, err);
   }
 };

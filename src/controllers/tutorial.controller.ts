@@ -9,6 +9,11 @@ import { listInquiry, parseIdParam, parseInput } from "../libs/validation";
 import { ProductStatus } from "../libs/enums/product.enum";
 import { reportError, sendError } from "../libs/utils/monitoring";
 import { redirectWithNotice } from "../libs/utils/notice";
+import {
+  ADMIN_PAGE_SIZE,
+  pageFromQuery,
+  pagingFor,
+} from "../libs/utils/paging";
 
 const tutorialService = new TutorialService();
 const productService = new ProductService();
@@ -48,7 +53,14 @@ tutorialController.getTutorial = async (req: Request, res: Response) => {
 tutorialController.getAllTutorials = async (req: Request, res: Response) => {
   try {
     console.log("getAllTutorials");
-    const data = await tutorialService.getAllTutorials();
+    const page = pageFromQuery(req.query.page);
+    const { list, total } = await tutorialService.getAllTutorials(
+      page,
+      ADMIN_PAGE_SIZE,
+    );
+    const paging = pagingFor(total, page);
+    if (page > paging.pages)
+      return res.redirect(`/admin/tutorial/all?page=${paging.pages}`);
 
     // The form's two selects are driven by the real catalog: every brand we
     // actually stock, and the products behind them (the brand choice
@@ -61,7 +73,7 @@ tutorialController.getAllTutorials = async (req: Request, res: Response) => {
       ...new Set(products.map((product) => product.productBrand)),
     ].sort((a, b) => a.localeCompare(b));
 
-    res.render("tutorials", { tutorials: data, products, brands });
+    res.render("tutorials", { tutorials: list, products, brands, paging });
   } catch (err) {
     console.log("Error on getAllTutorials", err);
     sendError(res, err);

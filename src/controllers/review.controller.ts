@@ -8,6 +8,11 @@ import { ReviewInput } from "../libs/types/review";
 import { listInquiry, parseIdParam, parseInput } from "../libs/validation";
 import { reportError, sendError } from "../libs/utils/monitoring";
 import { redirectWithNotice } from "../libs/utils/notice";
+import {
+  ADMIN_PAGE_SIZE,
+  pageFromQuery,
+  pagingFor,
+} from "../libs/utils/paging";
 
 const reviewService = new ReviewService();
 const productService = new ProductService();
@@ -48,11 +53,18 @@ reviewController.getReviews = async (req: Request, res: Response) => {
 reviewController.getAllReviews = async (req: Request, res: Response) => {
   try {
     console.log("getAllReviews");
-    const data = await reviewService.getAllReviews();
+    const page = pageFromQuery(req.query.page);
+    const { list, total } = await reviewService.getAllReviews(
+      page,
+      ADMIN_PAGE_SIZE,
+    );
+    const paging = pagingFor(total, page);
+    if (page > paging.pages)
+      return res.redirect(`/admin/review/all?page=${paging.pages}`);
     // the select in the "New Review" form needs the real product list
     const products = await productService.listAllProducts();
 
-    res.render("reviews", { reviews: data, products: products });
+    res.render("reviews", { reviews: list, products: products, paging });
   } catch (err) {
     console.log("Error on getAllReviews", err);
     sendError(res, err);

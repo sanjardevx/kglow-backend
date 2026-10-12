@@ -30,7 +30,7 @@
                 <!--  LOOP REVIEWS: START  -->
                 <% reviews.map(function(value, key) { %>
                 <tr>
-                  <td class="cell-soft"><%= key + 1 %></td>
+                  <td class="cell-soft"><%= (paging.page - 1) * paging.size + key + 1 %></td>
                   <td>
                     <% if (value.productData[0]) { %>
                     <div class="cell-strong"><%= value.productData[0].productName %></div>
@@ -60,6 +60,7 @@
               </tbody>
             </table>
             </div>
+            <%- include('includes/pager', { paging: paging, href: '/admin/review/all' }) %>
           </div>
           <form
             onsubmit="return validateForm()"

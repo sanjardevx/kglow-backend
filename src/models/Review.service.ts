@@ -3,6 +3,7 @@ import { ReviewStatus } from "../libs/enums/review.enum";
 import Errors, { HttpCode, Message } from "../libs/Errors";
 import { Review, ReviewInput, ReviewUpdateInput } from "../libs/types/review";
 import ReviewModel from "../schema/Review.model";
+import { skipFor } from "../libs/utils/paging";
 
 class ReviewService {
   private readonly reviewModel;
@@ -49,10 +50,17 @@ class ReviewService {
 
   /** SSR */
 
-  public async getAllReviews(): Promise<Review[]> {
+  public async getAllReviews(
+    page: number,
+    size: number,
+  ): Promise<{ list: Review[]; total: number }> {
+    const total = await this.reviewModel.countDocuments().exec();
     const result = await this.reviewModel
       .aggregate([
         { $sort: { createdAt: -1 } },
+        // Paged before the lookup, so only this page's rows are joined.
+        { $skip: skipFor(page, size) },
+        { $limit: size },
         {
           $lookup: {
             from: "products",
@@ -65,7 +73,7 @@ class ReviewService {
       .exec();
     if (!result) throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
 
-    return result;
+    return { list: result, total };
   }
 
   public async createNewReview(input: ReviewInput): Promise<Review> {

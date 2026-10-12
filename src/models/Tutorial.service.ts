@@ -14,6 +14,7 @@ import {
   fetchTutorialThumbnail,
   parseTutorialLink,
 } from "../libs/utils/tutorialLink";
+import { skipFor } from "../libs/utils/paging";
 
 class TutorialService {
   private readonly tutorialModel;
@@ -76,14 +77,20 @@ class TutorialService {
 
   /** SSR */
 
-  public async getAllTutorials(): Promise<Tutorial[]> {
+  public async getAllTutorials(
+    page: number,
+    size: number,
+  ): Promise<{ list: Tutorial[]; total: number }> {
+    const total = await this.tutorialModel.countDocuments().exec();
     const result = await this.tutorialModel
       .find()
       .sort({ createdAt: -1 })
+      .skip(skipFor(page, size))
+      .limit(size)
       .exec();
     if (!result) throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
 
-    return result;
+    return { list: result, total };
   }
 
   public async createNewTutorial(input: TutorialInput): Promise<Tutorial> {

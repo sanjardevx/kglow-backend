@@ -145,3 +145,18 @@ export const orderCreateInput = z.object({
   deliveryAddress: text(300).optional(),
   transferNote: text(500).optional(),
 });
+
+/** The AI Beauty quiz (POST /ai/routine). Every answer is a fixed choice
+ *  except the optional note. */
+export const routineInput = z.object({
+  skinType: z.enum(["dry", "oily", "combination", "normal", "unsure"]),
+  concerns: z
+    .array(z.enum(["acne", "dark_spots", "dryness", "redness", "pores", "aging"]))
+    .max(6)
+    .default([]),
+  sensitive: z.boolean(),
+  size: z.enum(["simple", "full"]),
+  note: text(300).optional().default(""),
+  lang: z.enum(["uz", "ru", "en"]),
+});
+export type RoutineInput = z.infer<typeof routineInput>;

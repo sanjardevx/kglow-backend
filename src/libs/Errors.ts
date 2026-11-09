@@ -25,6 +25,9 @@ export enum Message {
   GOOGLE_ACCOUNT = "This account signs in with Google — use the Google button.",
   GOOGLE_FAILED = "Google sign-in failed, please try again.",
   GOOGLE_OFF = "Google sign-in isn't set up yet.",
+
+  AI_OFF = "AI Beauty isn't set up yet.",
+  AI_FAILED = "We couldn't build your routine just now, please try again.",
   WRONG_PASSWORD = "Wrong password, please try again!",
   NOT_AUTHENTICATED = "You are not authenticated, please login first!",
   TOO_MANY_ATTEMPTS = "Too many attempts, please try again later!",

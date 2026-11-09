@@ -30,6 +30,21 @@ export const signupLimiter = rateLimit({
 });
 
 /**
+ * Each AI Beauty routine is a paid call to Claude, so a visitor gets a
+ * handful an hour — plenty to try a few answers, too few to run up a bill.
+ * Only routines actually delivered count: a quiz the server turned away, or
+ * a call that failed, shouldn't use up the shopper's tries.
+ */
+export const aiRoutineLimiter = rateLimit({
+  windowMs: 60 * MINUTE,
+  limit: 6,
+  skipFailedRequests: true,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  message: tooMany,
+});
+
+/**
  * The admin forms answer a wrong password with a 200 and an alert, so there
  * is no failure status to count on — every attempt counts instead, which one
  * advisor never comes close to. Answered by re-rendering the login page with

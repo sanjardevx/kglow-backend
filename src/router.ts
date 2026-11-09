@@ -14,7 +14,12 @@ import orderController from "./controllers/order.controller";
 import reviewController from "./controllers/review.controller";
 import tutorialController from "./controllers/tutorial.controller";
 import discountController from "./controllers/discount.controller";
-import { loginLimiter, signupLimiter } from "./libs/utils/rateLimiter";
+import beautyController from "./controllers/beauty.controller";
+import {
+  aiRoutineLimiter,
+  loginLimiter,
+  signupLimiter,
+} from "./libs/utils/rateLimiter";
 
 //** Member **/
 router.post("/member/login", loginLimiter, memberController.login);
@@ -73,5 +78,8 @@ router.get(
   memberController.verifyAuth,
   orderController.getMyOrders,
 );
+
+/** AI Beauty **/
+router.post("/ai/routine", aiRoutineLimiter, beautyController.buildRoutine);
 
 export default router;

@@ -28,6 +28,8 @@ export enum Message {
 
   AI_OFF = "AI Beauty isn't set up yet.",
   AI_FAILED = "We couldn't build your routine just now, please try again.",
+  AI_CHAT_FAILED = "We couldn't answer just now, please try again.",
+  AI_LIMIT = "You've used today's 10 AI answers. Come back tomorrow!",
   WRONG_PASSWORD = "Wrong password, please try again!",
   NOT_AUTHENTICATED = "You are not authenticated, please login first!",
   TOO_MANY_ATTEMPTS = "Too many attempts, please try again later!",

@@ -30,14 +30,14 @@ export const signupLimiter = rateLimit({
 });
 
 /**
- * Each AI Beauty routine is a paid call to Claude, so a visitor gets a
- * handful an hour — plenty to try a few answers, too few to run up a bill.
- * Only routines actually delivered count: a quiz the server turned away, or
- * a call that failed, shouldn't use up the shopper's tries.
+ * AI Beauty is for signed-in members, who each get a daily number of answers
+ * (counted in Beauty.service). This per-address cap only stops one person
+ * spreading requests over many fresh accounts. Turned-away and failed
+ * requests don't count.
  */
-export const aiRoutineLimiter = rateLimit({
+export const aiLimiter = rateLimit({
   windowMs: 60 * MINUTE,
-  limit: 6,
+  limit: 40,
   skipFailedRequests: true,
   standardHeaders: "draft-8",
   legacyHeaders: false,

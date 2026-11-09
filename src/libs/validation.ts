@@ -160,3 +160,21 @@ export const routineInput = z.object({
   lang: z.enum(["uz", "ru", "en"]),
 });
 export type RoutineInput = z.infer<typeof routineInput>;
+
+/** An AI Beauty chat turn (POST /ai/chat): the conversation so far, ending
+ *  with the shopper's new question. The server only sends the latest few on
+ *  to Claude. */
+export const chatInput = z.object({
+  messages: z
+    .array(
+      z.object({
+        role: z.enum(["user", "assistant"]),
+        content: z.string().trim().min(1).max(1000, Message.TEXT_TOO_LONG),
+      }),
+    )
+    .min(1)
+    .max(30)
+    .refine((m) => m[m.length - 1].role === "user"),
+  lang: z.enum(["uz", "ru", "en"]),
+});
+export type ChatInput = z.infer<typeof chatInput>;

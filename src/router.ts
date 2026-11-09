@@ -16,7 +16,7 @@ import tutorialController from "./controllers/tutorial.controller";
 import discountController from "./controllers/discount.controller";
 import beautyController from "./controllers/beauty.controller";
 import {
-  aiRoutineLimiter,
+  aiLimiter,
   loginLimiter,
   signupLimiter,
 } from "./libs/utils/rateLimiter";
@@ -80,6 +80,19 @@ router.get(
 );
 
 /** AI Beauty **/
-router.post("/ai/routine", aiRoutineLimiter, beautyController.buildRoutine);
+// Members only: every answer is a paid call, counted against a daily limit.
+router.get("/ai/status", memberController.verifyAuth, beautyController.getStatus);
+router.post(
+  "/ai/routine",
+  aiLimiter,
+  memberController.verifyAuth,
+  beautyController.buildRoutine,
+);
+router.post(
+  "/ai/chat",
+  aiLimiter,
+  memberController.verifyAuth,
+  beautyController.chat,
+);
 
 export default router;

@@ -5,6 +5,9 @@ on:
     branches: [develop, main, master]
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -19,3 +22,38 @@ jobs:
       - run: npm run build
       # Starts its own throwaway MongoDB; no database or secrets needed.
       - run: npm test
+
+  # Only a push to develop that passed every test reaches the live server.
+  deploy:
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    # One deploy at a time; a newer push waits instead of cutting one off.
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+    env:
+      HOST: 13.124.33.134
+      # The server's public host key, so the runner knows it's really ours.
+      HOST_KEY: "13.124.33.134 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKdnY1C6TMMKWA8T1SQ4d4+Be4vLjQu4fX3rlrRbs4iz"
+      API_URL: https://13-124-33-134.sslip.io
+    steps:
+      - name: Update the server
+        env:
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy
+          chmod 600 ~/.ssh/deploy
+          printf '%s\n' "$HOST_KEY" > ~/.ssh/known_hosts
+          # The key only ever runs scripts/deploy.sh on the server.
+          ssh -i ~/.ssh/deploy -o IdentitiesOnly=yes "ubuntu@$HOST" deploy
+
+      - name: Check the API answers
+        run: |
+          for i in $(seq 1 10); do
+            curl -fsS "$API_URL/health" && exit 0
+            sleep 3
+          done
+          echo "The API didn't come back after the restart" >&2
+          exit 1

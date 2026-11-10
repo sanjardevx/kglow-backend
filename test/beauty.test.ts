@@ -36,6 +36,7 @@ vi.mock("@anthropic-ai/sdk", () => ({
 
 const step = (productId: string, name = "Step") => ({
   productId,
+  kind: name === "Serum" ? "serum" : "cleanser",
   step: name,
   why: "Suits you.",
   howToUse: "Apply gently.",
@@ -135,6 +136,8 @@ describe("AI Beauty routine", () => {
     // An id Claude made up and a repeated product are both dropped.
     expect(res.body.morning).toHaveLength(1);
     expect(res.body.morning[0].step).toBe("Cleanser");
+    expect(res.body.morning[0].kind).toBe("cleanser");
+    expect(res.body.evening[0].kind).toBe("serum");
     expect(res.body.morning[0].product.productName).toBe("Gentle cleanser");
     expect(res.body.evening).toHaveLength(1);
     expect(res.body.tips).toHaveLength(3);
@@ -147,6 +150,7 @@ describe("AI Beauty routine", () => {
     expect(saved.body.limit).toBe(10);
     expect(saved.body.routine.morning[0].product.productName).toBe("Gentle cleanser");
     expect(saved.body.routine.evening[0].product.productName).toBe("Pore serum");
+    expect(saved.body.routine.evening[0].kind).toBe("serum");
 
     // A product that sells out afterwards drops out of the saved routine.
     await ProductModel.updateOne({ _id: serum._id }, { productLeftCount: 0 });

@@ -44,8 +44,25 @@ const LANGUAGE_NAMES: Record<RoutineInput["lang"], string> = {
   en: "English",
 };
 
+/** What kind of step it is, so the shop can show the matching picture. */
+export const STEP_KINDS = [
+  "cleanser",
+  "oil_cleanser",
+  "toner",
+  "essence",
+  "serum",
+  "eye_cream",
+  "moisturizer",
+  "sunscreen",
+  "mask",
+  "exfoliant",
+  "spot_treatment",
+  "other",
+] as const;
+
 const StepSchema = z.object({
   productId: z.string(),
+  kind: z.enum(STEP_KINDS),
   step: z.string(),
   why: z.string(),
   howToUse: z.string(),
@@ -85,6 +102,7 @@ How to build it:
 - Makeup only belongs in a routine if the shopper's note asks for it.
 
 What to write, in the language the shopper's message asks for. ${PLAIN_WORDS}
+- "kind": the type of step, from the fixed list (use "other" only if none fits).
 - "step": one or two words naming the step (for example "Cleanser", "Sunscreen").
 - "why": one sentence of at most 12 words on what this product does for this shopper.
 - "howToUse": one sentence saying how much, how to apply it and how often (for example "A pea-size amount on damp skin, every evening.").
@@ -271,7 +289,8 @@ class BeautyService {
       const product = byId.get(s.productId);
       if (!product || seen.has(s.productId)) return [];
       seen.add(s.productId);
-      return [{ step: s.step, why: s.why, howToUse: s.howToUse, product }];
+      // Routines saved before steps had a kind read back as "other".
+      return [{ kind: s.kind ?? "other", step: s.step, why: s.why, howToUse: s.howToUse, product }];
     });
   }
 
@@ -349,6 +368,7 @@ class BeautyService {
       const kept = (steps: typeof routine.morning): Step[] =>
         steps.map((s) => ({
           productId: s.product._id.toString(),
+          kind: s.kind,
           step: s.step,
           why: s.why,
           howToUse: s.howToUse,

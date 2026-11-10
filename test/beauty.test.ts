@@ -11,17 +11,19 @@ let lastRequest: any = null;
 let nextRoutine: (ids: string[]) => any = () => null;
 let nextChat: (ids: string[]) => any = () => null;
 let nextStopReason = "end_turn";
+let parseCalls = 0;
 
 vi.mock("@anthropic-ai/sdk", () => ({
   default: class {
     beta = {
       messages: {
         parse: async (params: any) => {
+          parseCalls++;
           lastRequest = params;
-          const catalogText: string = params.system[1].text;
+          const catalogText: string = params.system[0].text;
           const catalog = JSON.parse(catalogText.slice(catalogText.indexOf("[")));
           const ids = catalog.map((p: { id: string }) => p.id);
-          const isChat = params.system[0].text.includes("chat");
+          const isChat = params.system[1].text.includes("chat");
           return {
             model: params.model,
             stop_reason: nextStopReason,
@@ -123,15 +125,18 @@ describe("AI Beauty routine", () => {
     const res = await routine(token, answers).expect(200);
 
     // Only products that can actually be bought went to Claude.
-    const sent: string = lastRequest.system[1].text;
+    const sent: string = lastRequest.system[0].text;
     expect(sent).toContain(String(cleanser._id));
     expect(sent).toContain(String(serum._id));
     expect(sent).not.toContain(String(paused._id));
     expect(sent).not.toContain(String(empty._id));
-    // The catalog is the cached part; the language comes after it.
-    expect(lastRequest.system[1].cache_control).toEqual({ type: "ephemeral" });
+    // The catalog comes first and is the cached part (shared by quiz and
+    // chat); the instructions and the language come after it.
+    expect(lastRequest.system[0].cache_control).toEqual({ type: "ephemeral" });
     expect(lastRequest.system[2].text).toContain("Uzbek");
-    expect(lastRequest.fallbacks).toBe("default");
+    expect(lastRequest.model).toBe("claude-haiku-5-5");
+    // Haiku has no server-side fallback; sending one would be refused.
+    expect(lastRequest.fallbacks).toBeUndefined();
 
     // An id Claude made up and a repeated product are both dropped.
     expect(res.body.morning).toHaveLength(1);
@@ -163,6 +168,20 @@ describe("AI Beauty routine", () => {
     const token = await newMember();
     await routine(token, { ...answers, lang: "ru" }).expect(200);
     expect(lastRequest.system[2].text).toContain("Russian");
+  });
+
+  it("asks again when Uzbek text slips into Cyrillic, and fixes apostrophes", async () => {
+    const token = await newMember();
+    let call = 0;
+    nextRoutine = (ids) => ({
+      ...simpleRoutine(ids),
+      summary: call++ === 0 ? "Bu tartib terингизни yumshatadi." : "Bu o'zingiz uchun ta’sirchan teri tartibi.",
+    });
+    parseCalls = 0;
+    const res = await routine(token, answers).expect(200);
+    expect(parseCalls).toBe(2);
+    expect(res.body.summary).toBe("Bu oʻzingiz uchun taʼsirchan teri tartibi.");
+    expect(res.body.left).toBe(9); // still one try for the shopper
   });
 
   it("refuses answers that aren't on the quiz, without using a try", async () => {
@@ -220,7 +239,7 @@ describe("AI Beauty chat", () => {
     expect(new Set(ids).size).toBe(ids.length);
     expect(ids).not.toContain("000000000000000000000000");
     expect(res.body.left).toBe(9);
-    expect(lastRequest.system[0].text).toContain("Only help with skincare");
+    expect(lastRequest.system[1].text).toContain("Only help with skincare");
     expect(lastRequest.system[2].text).toContain("English");
   });
 

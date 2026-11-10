@@ -29,7 +29,10 @@ import { Product } from "../libs/types/product";
 import Errors, { HttpCode, Message } from "../libs/Errors";
 import type { ChatInput, RoutineInput } from "../libs/validation";
 
-const MODEL = "claude-opus-5-5";
+// Haiku: picking a few products from ~50 and writing a few plain sentences
+// is light work, and at this shop's size it costs a fraction of a cent per
+// answer.
+const MODEL = "claude-haiku-5-5";
 export const DAILY_LIMIT = 10;
 const DAY_MS = 24 * 60 * 60 * 1000;
 const UZ_OFFSET_MS = 5 * 60 * 60 * 1000; // Tashkent is UTC+5 all year
@@ -39,7 +42,7 @@ const CHAT_HISTORY = 8;
 const CHAT_MAX_PRODUCTS = 4;
 
 const LANGUAGE_NAMES: Record<RoutineInput["lang"], string> = {
-  uz: "Uzbek (Latin script: write oʻ and gʻ with the ʻ letter, and ʼ for the apostrophe)",
+  uz: "Uzbek in the Latin alphabet only — never a Cyrillic letter (write oʻ and gʻ with the ʻ letter, and ʼ for the apostrophe)",
   ru: "Russian",
   en: "English",
 };
@@ -92,7 +95,7 @@ const PLAIN_WORDS = `Write for someone who knows nothing about skincare: short s
  */
 const ROUTINE_INSTRUCTIONS = `You are the skincare advisor for K-Glow Secrets, a small shop in Uzbekistan that sells original Korean skincare and makeup.
 
-A shopper has answered a short skin quiz. Build them a morning and an evening routine using only products from the catalog below. Refer to each product by its "id" exactly as written in the catalog. If the catalog has nothing suitable for a step, leave that step out — never invent a product.
+A shopper has answered a short skin quiz. Build them a morning and an evening routine using only products from the catalog above. Refer to each product by its "id" exactly as written in the catalog. If the catalog has nothing suitable for a step, leave that step out — never invent a product.
 
 How to build it:
 - "simple" routine: at most 3 steps in the morning and 3 in the evening. "full" routine: at most 6 each.
@@ -110,7 +113,7 @@ What to write, in the language the shopper's message asks for. ${PLAIN_WORDS}
 - "tips": two or three habits that go with the routine, at most 10 words each.
 - "seeDermatologist": true when the answers or note suggest something a doctor should look at (painful or cystic acne, a sudden rash, broken or bleeding skin). Then say so gently in the summary. This is shopping advice, not a diagnosis.`;
 
-const CHAT_INSTRUCTIONS = `You are the skincare helper for K-Glow Secrets, a small shop in Uzbekistan that sells original Korean skincare and makeup. Shoppers ask you questions in a chat.
+const CHAT_INSTRUCTIONS = `You are the skincare helper for K-Glow Secrets, a small shop in Uzbekistan that sells original Korean skincare and makeup. Shoppers ask you questions in a chat; the shop's catalog is above.
 
 Rules:
 - Only help with skincare, makeup and the shop's products. For anything else, say kindly in one sentence that you can only help with skin and beauty, and recommend nothing.
@@ -126,6 +129,27 @@ function trim(text: string | undefined, max: number): string | undefined {
   if (!text) return undefined;
   const clean = text.replace(/\s+/g, " ").trim();
   return clean.length <= max ? clean : `${clean.slice(0, max - 1)}…`;
+}
+
+const CYRILLIC = /[\u0400-\u04FF]/;
+
+/** Runs `fix` over every string in a parsed answer. */
+function mapStrings<V>(value: V, fix: (s: string) => string): V {
+  if (typeof value === "string") return fix(value) as V;
+  if (Array.isArray(value)) return value.map((v) => mapStrings(v, fix)) as V;
+  if (value && typeof value === "object")
+    return Object.fromEntries(
+      Object.entries(value).map(([k, v]) => [k, mapStrings(v, fix)]),
+    ) as V;
+  return value;
+}
+
+/** Uzbek Latin spells oʻ and gʻ with ʻ and the glottal stop with ʼ; models
+ *  often type a plain or curly apostrophe instead. */
+function fixUzbekApostrophes(text: string): string {
+  return text
+    .replace(/([OoGg])['’‘`ʼ]/g, "$1ʻ")
+    .replace(/(\p{L})['’`]/gu, "$1ʼ");
 }
 
 /** Today's date in Uzbekistan, which is when the daily count starts over. */
@@ -225,14 +249,14 @@ class BeautyService {
         category: p.productCategory,
         volume: p.productVolume,
         price: p.productPrice,
-        description: trim(p.productDesc, 400),
-        howToUse: trim(p.productHowToUse, 200),
-        suitableFor: trim(p.productSuitableFor, 200),
+        description: trim(p.productDesc, 250),
+        howToUse: trim(p.productHowToUse, 120),
+        suitableFor: trim(p.productSuitableFor, 120),
       })),
     )}`;
   }
 
-  private async ask<S extends z.ZodType>(
+  private async askOnce<S extends z.ZodType>(
     schema: S,
     instructions: string,
     catalog: CatalogProduct[],
@@ -245,23 +269,24 @@ class BeautyService {
       response = await this.getClient().beta.messages.parse({
         model: MODEL,
         max_tokens: 4000,
-        // Picking from ~50 products is light work; low effort keeps the
-        // wait to a few seconds.
+        // Low effort: matching a few products and writing short plain
+        // sentences needs little thought, and it keeps the wait short.
+        // (Haiku has no server-side fallback, so no `fallbacks` here; a
+        // decline shows as a refusal and the shopper can try again.)
         output_config: { effort: "low", format: betaZodOutputFormat(schema) },
-        // If Claude's safety checks decline (a false positive on a skin
-        // question), another Claude model answers instead of the shopper
-        // seeing an error.
-        betas: ["server-side-fallback-2026-07-01"],
-        fallbacks: "default",
         system: [
-          { type: "text", text: instructions },
+          // The catalog is the big, fixed part, so it's cached: answers a
+          // few minutes apart reuse it instead of paying for it again.
           {
             type: "text",
             text: this.catalogText(catalog),
             cache_control: { type: "ephemeral" },
           },
-          // After the cached part, so switching language doesn't miss it.
-          { type: "text", text: `Write everything in ${LANGUAGE_NAMES[lang]}.` },
+          { type: "text", text: instructions },
+          {
+            type: "text",
+            text: `Write every text field — step names included — in ${LANGUAGE_NAMES[lang]}. Product names stay exactly as in the catalog.`,
+          },
         ],
         messages,
       });
@@ -279,6 +304,28 @@ class BeautyService {
     if (response.stop_reason === "refusal" || !response.parsed_output)
       throw new Errors(HttpCode.INTERNAL_SERVER_ERROR, failure);
     return response.parsed_output;
+  }
+
+  /**
+   * One answer, in the shopper's language. Haiku now and then slips a
+   * Cyrillic word into Uzbek Latin text; such an answer is asked for once
+   * more rather than shown.
+   */
+  private async ask<S extends z.ZodType>(
+    schema: S,
+    instructions: string,
+    catalog: CatalogProduct[],
+    lang: RoutineInput["lang"],
+    messages: Anthropic.Beta.BetaMessageParam[],
+    failure: Message,
+  ): Promise<z.infer<S>> {
+    let answer = await this.askOnce(schema, instructions, catalog, lang, messages, failure);
+    if (lang !== "uz") return answer;
+    if (CYRILLIC.test(JSON.stringify(answer))) {
+      console.log("AI Beauty: Cyrillic in an Uzbek answer, asking again");
+      answer = await this.askOnce(schema, instructions, catalog, lang, messages, failure);
+    }
+    return mapStrings(answer, fixUzbekApostrophes);
   }
 
   /** Turns Claude's product ids into real products, dropping any that

@@ -15,7 +15,6 @@ import ProductModel from "../schema/Product.model";
 import ViewService from "./View.service";
 import { ViewInput } from "../libs/types/view";
 import { ViewGroup } from "../libs/enums/view.enum";
-import { skipFor } from "../libs/utils/paging";
 
 const escapeRegExp = (text: string) =>
   text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -149,20 +148,9 @@ class ProductService {
   }
 
   /** SSR: one page of the admin's product list, newest first. */
-  public async getAllProducts(
-    page: number,
-    size: number,
-  ): Promise<{ list: Product[]; total: number }> {
-    const total = await this.productModel.countDocuments().exec();
-    const result = await this.productModel
-      .find()
-      .sort({ createdAt: -1 })
-      .skip(skipFor(page, size))
-      .limit(size)
-      .exec();
-    if (!result) throw new Errors(HttpCode.NOT_FOUND, Message.NO_DATA_FOUND);
-
-    return { list: result, total };
+  /** Every product, newest first, for the admin's product page. */
+  public async getAllProducts(): Promise<Product[]> {
+    return this.productModel.find().sort({ createdAt: -1 }).exec();
   }
 
   public async createNewProduct(input: ProductInput): Promise<Product> {

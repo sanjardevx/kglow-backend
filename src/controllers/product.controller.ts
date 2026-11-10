@@ -10,11 +10,6 @@ import {
   productInquiry,
 } from "../libs/validation";
 import { reportError, sendError } from "../libs/utils/monitoring";
-import {
-  ADMIN_PAGE_SIZE,
-  pageFromQuery,
-  pagingFor,
-} from "../libs/utils/paging";
 import { redirectWithNotice } from "../libs/utils/notice";
 
 const productService = new ProductService();
@@ -65,16 +60,10 @@ productController.getProduct = async (req: ExtendenRequest, res: Response) => {
 productController.getAllProducts = async (req: Request, res: Response) => {
   try {
     console.log("getAllProducts");
-    const page = pageFromQuery(req.query.page);
-    const { list, total } = await productService.getAllProducts(
-      page,
-      ADMIN_PAGE_SIZE,
-    );
-    const paging = pagingFor(total, page);
-    if (page > paging.pages)
-      return res.redirect(`/admin/product/all?page=${paging.pages}`);
-
-    res.render("products", { products: list, paging });
+    // The whole catalog on one page: the shop has tens of products, and the
+    // page's search, filters and sorting work on all of them at once.
+    const products = await productService.getAllProducts();
+    res.render("products", { products });
   } catch (err) {
     console.log("Error on getAllProducts", err);
     sendError(res, err);

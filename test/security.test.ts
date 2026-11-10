@@ -1,12 +1,16 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import request from "supertest";
-import { createAdmin, PNG, startTestApp, VERCEL_ORIGIN, type TestApp } from "./helpers";
+import { addProduct, createAdmin, PNG, startTestApp, VERCEL_ORIGIN, type TestApp } from "./helpers";
 
 let ctx: TestApp;
 beforeAll(async () => {
   ctx = await startTestApp();
 });
 afterAll(async () => ctx.stop());
+
+// There is only ever one advisor account, so the tests share its session.
+let adminAgent: Awaited<ReturnType<typeof createAdmin>> | undefined;
+const getAdmin = async () => (adminAgent ??= await createAdmin(ctx.app));
 
 describe("headers", () => {
   it("lets the Vercel shop call the API and show its images", async () => {
@@ -48,7 +52,7 @@ describe("routes", () => {
 
 describe("uploads", () => {
   it("serves product images publicly, with nosniff and a safe extension", async () => {
-    const admin = await createAdmin(ctx.app);
+    const admin = await getAdmin();
     const created = await admin
       .post("/admin/product/create")
       .field("productBrand", "Brand")
@@ -85,5 +89,17 @@ describe("uploads", () => {
 
   it("still keeps payment proofs out of the open folders", async () => {
     expect((await request(ctx.app).get("/uploads/orders/anything.png")).status).toBe(404);
+  });
+});
+
+describe("admin products page", () => {
+  it("lists the whole catalog on one page, ready for search and filters", async () => {
+    for (let i = 0; i < 25; i++) await addProduct({ productName: `Listed ${i}` });
+    const admin = await getAdmin();
+    const res = await admin.get("/admin/product/all").expect(200);
+    const rows = res.text.match(/class="pf-row"/g) ?? [];
+    expect(rows.length).toBeGreaterThanOrEqual(25); // more than the old 20 a page
+    expect(res.text).toContain('id="pf-q"');
+    expect(res.text).not.toContain('class="pager"');
   });
 });

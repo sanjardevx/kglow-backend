@@ -111,18 +111,23 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use("/uploads/orders", (req, res) => {
   res.sendStatus(HttpCode.NOT_FOUND);
 });
+const uploadOptions = {
+  // Every upload gets a fresh random name and is never rewritten — an edit
+  // saves a new file under a new name — so browsers may keep each one for
+  // good and skip asking again on the next visit.
+  maxAge: "365d",
+  immutable: true,
+  // Belt and braces for files saved before uploads were limited to images:
+  // the browser goes by the extension and never guesses a page out of one.
+  setHeaders: (res: Response) => res.setHeader("X-Content-Type-Options", "nosniff"),
+};
 app.use(
   "/uploads",
-  express.static("uploads", {
-    // Every upload gets a fresh random name and is never rewritten — an edit
-    // saves a new file under a new name — so browsers may keep each one for
-    // good and skip asking again on the next visit.
-    maxAge: "365d",
-    immutable: true,
-    // Belt and braces for files saved before uploads were limited to images:
-    // the browser goes by the extension and never guesses a page out of one.
-    setHeaders: (res) => res.setHeader("X-Content-Type-Options", "nosniff"),
-  }),
+  express.static("uploads", uploadOptions),
+  // The catalog's product photos ship with the code (seed/uploads), so a
+  // fresh server or a lost disk still shows them; anything the admin panel
+  // uploads later lands in uploads/ above and is found first.
+  express.static(path.join(__dirname, "..", "seed", "uploads"), uploadOptions),
 );
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());

@@ -70,4 +70,20 @@ describe("uploads", () => {
     expect(res.headers["content-type"]).toBe("image/png");
     expect(res.headers["x-content-type-options"]).toBe("nosniff");
   });
+
+  it("serves the catalog photos that ship with the code", async () => {
+    // seed/uploads holds the catalog's photos; uploads/ (empty here) is
+    // checked first, so admin uploads always win.
+    const res = await request(ctx.app).get(
+      "/uploads/products/6aad6462090d1858db1fc011-1.jpg",
+    );
+    expect(res.status).toBe(200);
+    expect(res.headers["content-type"]).toBe("image/jpeg");
+    expect(res.headers["x-content-type-options"]).toBe("nosniff");
+    expect((await request(ctx.app).get("/uploads/products/missing.jpg")).status).toBe(404);
+  });
+
+  it("still keeps payment proofs out of the open folders", async () => {
+    expect((await request(ctx.app).get("/uploads/orders/anything.png")).status).toBe(404);
+  });
 });

@@ -484,3 +484,155 @@
     min-width: 860px;
   }
 }
+
+/* ---------- Toolbar: search, filters, sort ---------- */
+
+.section-count {
+  margin-left: 6px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--ink-soft);
+  font-size: 14px;
+  font-weight: 600;
+  vertical-align: 2px;
+}
+
+.pf-bar {
+  /* The board centres its children; the toolbar spans it like the table. */
+  align-self: stretch;
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.pf-search {
+  position: relative;
+  margin: 0;
+  display: flex;
+  flex: 1 1 260px;
+  align-items: center;
+  max-width: 380px;
+}
+
+.pf-search svg {
+  position: absolute;
+  left: 12px;
+  width: 18px;
+  height: 18px;
+  color: var(--ink-faint);
+  pointer-events: none;
+}
+
+.pf-search input {
+  width: 100%;
+  height: 42px;
+  padding: 0 12px 0 38px;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 15px;
+}
+
+.pf-search input:focus,
+.pf-select:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+  border-color: var(--accent);
+}
+
+.pf-chips {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 10px;
+  background: var(--surface-2);
+}
+
+.pf-chip {
+  height: 34px;
+  padding: 0 14px;
+  border: none;
+  border-radius: 7px;
+  background: none;
+  color: var(--ink-soft);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.pf-chip:hover {
+  color: var(--ink);
+}
+
+.pf-chip.is-on {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 1px 2px rgba(26, 35, 51, 0.12);
+}
+
+/* The form's own dropdowns grow to full width when focused (rule above);
+   the toolbar's must keep their size, or a click throws the bar onto two
+   lines. */
+.products-container .pf-select:focus {
+  min-width: 0;
+  width: auto;
+}
+
+.pf-select {
+  height: 42px;
+  padding: 0 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.pf-reset,
+.pf-reset-inline {
+  height: 42px;
+  padding: 0 12px;
+  border: none;
+  background: none;
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.pf-reset-inline {
+  height: auto;
+  padding: 0;
+}
+
+.pf-empty {
+  margin: 0;
+  padding: 28px;
+  text-align: center;
+  color: var(--ink-soft);
+  font-size: 15px;
+}
+
+/* The edit button's column: wide enough for the button, and never cut
+   off into an ellipsis. */
+.table-data .col-actions {
+  width: 72px;
+}
+
+.table-data .cell-actions {
+  overflow: visible;
+  text-overflow: clip;
+  text-align: center;
+}
+
+/* Below this the columns would cut their text into "…"; the table scrolls
+   sideways inside .table-scroll instead. */
+.dishes-table .table-data {
+  min-width: 1040px;
+}

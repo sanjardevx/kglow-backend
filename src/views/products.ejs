@@ -10,32 +10,80 @@
         <div class="board">
           <div class="dishes-table">
             <div class="section-head">
-              <div class="section-title">Products</div>
+              <div class="section-title">Products <span class="section-count" id="pf-count"><%= products.length %></span></div>
               <button class="btn-console" id="process-btn" type="button">+ New Product</button>
             </div>
+
+            <%# Search, filters and sorting all run in the page over the whole
+                catalog (there is no paging), and are kept in the address so
+                they survive the reload after an edit. -%>
+            <div class="pf-bar" role="search">
+              <label class="pf-search">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+                <input type="search" id="pf-q" placeholder="Search name or brand…" autocomplete="off" aria-label="Search products" />
+              </label>
+              <div class="pf-chips" role="group" aria-label="Category">
+                <button type="button" class="pf-chip is-on" data-cat="">All</button>
+                <button type="button" class="pf-chip" data-cat="SKINCARE">Skincare</button>
+                <button type="button" class="pf-chip" data-cat="MAKEUP">Makeup</button>
+                <button type="button" class="pf-chip" data-cat="SETS">Sets</button>
+              </div>
+              <select id="pf-status" class="pf-select" aria-label="Status">
+                <option value="">All statuses</option>
+                <option value="PROCESS">Process</option>
+                <option value="PAUSE">Pause</option>
+                <option value="DELETE">Deleted</option>
+              </select>
+              <select id="pf-stock" class="pf-select" aria-label="Stock">
+                <option value="">Any stock</option>
+                <option value="low">Low (1–2 left)</option>
+                <option value="out">Out of stock</option>
+              </select>
+              <select id="pf-sort" class="pf-select" aria-label="Sort">
+                <option value="new">Newest first</option>
+                <option value="name">Name A–Z</option>
+                <option value="brand">Brand A–Z</option>
+                <option value="price-asc">Price: low to high</option>
+                <option value="price-desc">Price: high to low</option>
+                <option value="left">Stock: lowest first</option>
+                <option value="views">Most viewed</option>
+              </select>
+              <button type="button" class="pf-reset" id="pf-reset" hidden>Clear</button>
+            </div>
+
             <div class="table-scroll">
             <table class="table-data">
               <thead>
                 <tr>
-                  <%# These used to add up to 104%, which squeezed the last
-                      columns until their headings were cut off. -%>
                   <th style="width: 4%">#</th>
                   <th style="width: 6%"></th>
-                  <th style="width: 24%">Name</th>
-                  <th style="width: 14%">Brand</th>
+                  <th style="width: 23%">Name</th>
+                  <th style="width: 13%">Brand</th>
                   <th style="width: 11%">Category</th>
                   <th style="width: 9%">Volume</th>
                   <th style="width: 10%">Price</th>
                   <th style="width: 7%">Left</th>
-                  <th style="width: 10%">Status</th>
-                  <th style="width: 5%"></th>
+                  <th style="width: 11%">Status</th>
+                  <%# Fixed, so the edit button always fits instead of being
+                      cut off into "…". -%>
+                  <th class="col-actions"></th>
                 </tr>
               </thead>
               <tbody>
                 <!--  LOOP PRODUCTS: START  -->
                 <% products.map(function(value, key) { %>
-                <tr>
-                  <td class="cell-soft"><%= (paging.page - 1) * paging.size + key + 1 %></td>
+                <tr
+                  class="pf-row"
+                  data-order="<%= key %>"
+                  data-name="<%= value.productName.toLowerCase() %>"
+                  data-brand="<%= value.productBrand.toLowerCase() %>"
+                  data-category="<%= value.productCategory %>"
+                  data-status="<%= value.productStatus %>"
+                  data-price="<%= value.productPrice %>"
+                  data-left="<%= value.productLeftCount %>"
+                  data-views="<%= value.productViews || 0 %>"
+                >
+                  <td class="cell-soft pf-num"><%= key + 1 %></td>
                   <td>
                     <% if (value.productImages && value.productImages[0]) { %>
                     <img src="/<%= value.productImages[0] %>" class="thumb-sm" />
@@ -62,7 +110,7 @@
                         <%= value.productStatus === 'DELETE' ? 'selected' : '' %> >Delete</option>
                     </select>
                   </td>
-                  <td>
+                  <td class="cell-actions">
                     <button
                       class="btn-outline product-edit-btn"
                       type="button"
@@ -78,8 +126,8 @@
                 <!--  LOOP PRODUCTS: END  -->
               </tbody>
             </table>
+            <p class="pf-empty" id="pf-empty" hidden>No products match. <button type="button" class="pf-reset-inline" id="pf-reset-2">Clear filters</button></p>
             </div>
-            <%- include('includes/pager', { paging: paging, href: '/admin/product/all' }) %>
           </div>
           <form
             onsubmit="return validateForm()"
@@ -302,6 +350,7 @@
   </script>
 
   <script type="text/javascript" src="/js/products.js"></script>
+  <script type="text/javascript" src="/js/product-filters.js"></script>
 </body>
 
 <%- include('includes/footer') %>

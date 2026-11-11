@@ -36,7 +36,7 @@ jobs:
       HOST: 13.124.33.134
       # The server's public host key, so the runner knows it's really ours.
       HOST_KEY: "13.124.33.134 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKdnY1C6TMMKWA8T1SQ4d4+Be4vLjQu4fX3rlrRbs4iz"
-      API_URL: https://13-124-33-134.sslip.io
+      API_URL: https://api.kglowshop.uz
     steps:
       - name: Update the server
         env:

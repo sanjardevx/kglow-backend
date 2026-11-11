@@ -37,8 +37,9 @@ mongoose
       console.log(`Admin project on http://localhost:${PORT}/admin \n`);
     });
 
-    // Railway sends SIGTERM on every deploy. Finishing the requests already in
-    // flight means a checkout isn't cut off halfway through its transaction.
+    // pm2 stops the app with a signal on every restart (each deploy).
+    // Finishing the requests already in flight means a checkout isn't cut
+    // off halfway through its transaction.
     const shutdown = (signal: string) => {
       console.log(`${signal} received, shutting down`);
       server.close(() => {
@@ -52,7 +53,7 @@ mongoose
   })
   .catch((err) => {
     console.log("ERROR on connection MongoDB", err);
-    // Exiting lets Railway restart us; staying up would leave a process that
+    // Exiting lets pm2 restart us; staying up would leave a process that
     // looks alive but never listens.
     process.exit(1);
   });

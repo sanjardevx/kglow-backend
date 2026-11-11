@@ -33,10 +33,9 @@ function getTargetImageStorage(address: string) {
     // multer does not create this folder — it opens the write stream straight
     // away and fails with ENOENT when the folder is missing. Only the folders
     // something has already written to exist, and `uploads/` is gitignored, so
-    // on a fresh server (or a newly mounted Railway volume, which starts
-    // empty) the first upload of a given kind died inside the middleware,
-    // before the controller ever ran, and surfaced as a bare 500 with no clue
-    // in it. Creating it here is idempotent and costs one cheap syscall.
+    // on a fresh server (or a newly mounted, still empty disk) the first upload
+    // of a given kind died inside the middleware, before the controller ever
+    // ran, and surfaced as a bare 500 with no clue in it. Creating it here is idempotent and costs one cheap syscall.
     destination: function (req, file, cb) {
       fs.mkdir(destination, { recursive: true }, (err) => cb(err, destination));
     },

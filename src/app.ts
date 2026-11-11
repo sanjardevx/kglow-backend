@@ -43,7 +43,7 @@ store.on("error", (err) => {
 /** 1 - CREATE THE APP **/
 const app = express();
 
-// Railway terminates HTTPS itself and talks plain HTTP to this server, so
+// nginx terminates HTTPS on the server and talks plain HTTP to this app, so
 // without this Express reads every request as insecure and never marks the
 // session cookie Secure.
 app.set("trust proxy", 1);
@@ -86,7 +86,7 @@ app.use(
         "frame-src": ["https://www.youtube.com", "https://www.instagram.com"],
         "connect-src": ["'self'", "https://www.instagram.com"],
         "frame-ancestors": ["'none'"],
-        // Railway serves HTTPS and HSTS keeps browsers there; forcing upgrades
+        // nginx serves HTTPS and HSTS keeps browsers there; forcing upgrades
         // here would only break the admin panel over local http.
         "upgrade-insecure-requests": null,
       },
@@ -97,8 +97,9 @@ app.use(
 // all. Images are skipped; they are compressed already.
 app.use(compression());
 
-// For Railway's health check: healthy only while the database is reachable,
-// since without it every page fails anyway.
+// For health checks (the deploy job calls it after every release): healthy
+// only while the database is reachable, since without it every page fails
+// anyway.
 app.get("/health", (req, res) => {
   const ok = mongoose.connection.readyState === 1;
   res.status(ok ? HttpCode.OK : 503).json({ status: ok ? "ok" : "unavailable" });

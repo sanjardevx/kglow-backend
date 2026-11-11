@@ -31,7 +31,7 @@ const memberController: T = {};
 /**
  * Pulls the JWT out of a request.
  *
- * The SPA (Vercel) and this API (Railway) sit on different domains, which
+ * The SPA (Vercel) and this API (AWS) sit on different domains, which
  * makes the `accessToken` cookie a third-party cookie: Safari, every iOS
  * browser and Chrome's incognito window refuse to send it back, so a visitor
  * who had just signed in looked signed out on the very next request. The

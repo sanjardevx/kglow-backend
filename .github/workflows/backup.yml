@@ -1,0 +1,43 @@
+name: Database backup
+
+# Every night a full copy of the shop's database is saved as a private
+# download on this workflow's run page, kept for 30 days. It only reads the
+# database. To restore one, see scripts/restore-db.cjs.
+on:
+  schedule:
+    - cron: "0 22 * * *" # 03:00 in Tashkent
+  workflow_dispatch: # "Run workflow" button, for a backup right now
+
+permissions:
+  contents: read
+
+concurrency:
+  group: database-backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --omit=dev --ignore-scripts
+
+      - name: Copy the database
+        env:
+          MONGO_URL: ${{ secrets.MONGO_URL }}
+        run: |
+          STAMP=$(TZ=Asia/Tashkent date +%Y-%m-%d_%H%M)
+          echo "STAMP=$STAMP" >> "$GITHUB_ENV"
+          node scripts/backup-db.cjs "backup/kglow-$STAMP"
+          tar -czf "kglow-$STAMP.tar.gz" -C backup "kglow-$STAMP"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kglow-db-${{ env.STAMP }}
+          path: kglow-${{ env.STAMP }}.tar.gz
+          retention-days: 30
+          if-no-files-found: error

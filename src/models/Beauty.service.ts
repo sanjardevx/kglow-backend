@@ -33,7 +33,8 @@ import type { ChatInput, RoutineInput } from "../libs/validation";
 // is light work, and at this shop's size it costs a fraction of a cent per
 // answer.
 const MODEL = "claude-haiku-5-5";
-export const DAILY_LIMIT = 10;
+// Each member's AI answers per day (quiz and chat together).
+export const DAILY_LIMIT = 5;
 const DAY_MS = 24 * 60 * 60 * 1000;
 const UZ_OFFSET_MS = 5 * 60 * 60 * 1000; // Tashkent is UTC+5 all year
 

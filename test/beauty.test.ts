@@ -147,12 +147,12 @@ describe("AI Beauty routine", () => {
     expect(res.body.evening).toHaveLength(1);
     expect(res.body.tips).toHaveLength(3);
     expect(res.body.answers.skinType).toBe("oily");
-    expect(res.body.left).toBe(9);
+    expect(res.body.left).toBe(4);
 
     // Saved for My Page, read back with today's count.
     const saved = await status(token).expect(200);
-    expect(saved.body.left).toBe(9);
-    expect(saved.body.limit).toBe(10);
+    expect(saved.body.left).toBe(4);
+    expect(saved.body.limit).toBe(5);
     expect(saved.body.routine.morning[0].product.productName).toBe("Gentle cleanser");
     expect(saved.body.routine.evening[0].product.productName).toBe("Pore serum");
     expect(saved.body.routine.evening[0].kind).toBe("serum");
@@ -181,7 +181,7 @@ describe("AI Beauty routine", () => {
     const res = await routine(token, answers).expect(200);
     expect(parseCalls).toBe(2);
     expect(res.body.summary).toBe("Bu oʻzingiz uchun taʼsirchan teri tartibi.");
-    expect(res.body.left).toBe(9); // still one try for the shopper
+    expect(res.body.left).toBe(4); // still one try for the shopper
   });
 
   it("refuses answers that aren't on the quiz, without using a try", async () => {
@@ -189,7 +189,7 @@ describe("AI Beauty routine", () => {
     await routine(token, { ...answers, skinType: "purple" }).expect(400);
     await routine(token, { ...answers, concerns: [{ $ne: null }] }).expect(400);
     expect(lastRequest).toBeNull();
-    expect((await status(token)).body.left).toBe(10);
+    expect((await status(token)).body.left).toBe(5);
   });
 
   it("gives the try back when Claude declines or names nothing real", async () => {
@@ -203,7 +203,7 @@ describe("AI Beauty routine", () => {
     nextRoutine = () => simpleRoutine(["000000000000000000000000"]);
     await routine(token, answers).expect(500);
 
-    expect((await status(token)).body.left).toBe(10);
+    expect((await status(token)).body.left).toBe(5);
   });
 
   it("says AI Beauty is off when no key is configured", async () => {
@@ -216,7 +216,7 @@ describe("AI Beauty routine", () => {
     } finally {
       process.env.ANTHROPIC_API_KEY = key;
     }
-    expect((await status(token)).body.left).toBe(10);
+    expect((await status(token)).body.left).toBe(5);
   });
 });
 
@@ -238,7 +238,7 @@ describe("AI Beauty chat", () => {
     const ids = res.body.products.map((p: { _id: string }) => p._id);
     expect(new Set(ids).size).toBe(ids.length);
     expect(ids).not.toContain("000000000000000000000000");
-    expect(res.body.left).toBe(9);
+    expect(res.body.left).toBe(4);
     expect(lastRequest.system[1].text).toContain("Only help with skincare");
     expect(lastRequest.system[2].text).toContain("English");
   });
@@ -269,15 +269,15 @@ describe("AI Beauty chat", () => {
 });
 
 describe("AI Beauty daily limit", () => {
-  it("allows ten answers a day per member, quiz and chat together", async () => {
+  it("allows five answers a day per member, quiz and chat together", async () => {
     const token = await newMember();
     nextChat = () => ({ reply: "ok", productIds: [] });
-    for (let i = 0; i < 5; i++) await routine(token, answers).expect(200);
-    for (let i = 0; i < 5; i++) await chat(token, { messages: [{ role: "user", content: "hi" }], lang: "en" }).expect(200);
+    for (let i = 0; i < 3; i++) await routine(token, answers).expect(200);
+    for (let i = 0; i < 2; i++) await chat(token, { messages: [{ role: "user", content: "hi" }], lang: "en" }).expect(200);
 
     lastRequest = null;
     const res = await routine(token, answers).expect(429);
-    expect(res.body.message).toMatch(/10 AI answers/);
+    expect(res.body.message).toMatch(/today's AI answers/);
     expect(lastRequest).toBeNull();
     expect((await status(token)).body.left).toBe(0);
 
@@ -289,9 +289,9 @@ describe("AI Beauty daily limit", () => {
   it("holds when requests arrive at the same time", async () => {
     const token = await newMember();
     const results = await Promise.all(
-      Array.from({ length: 14 }, () => routine(token, answers)),
+      Array.from({ length: 8 }, () => routine(token, answers)),
     );
-    expect(results.filter((r) => r.status === 200)).toHaveLength(10);
-    expect(results.filter((r) => r.status === 429)).toHaveLength(4);
+    expect(results.filter((r) => r.status === 200)).toHaveLength(5);
+    expect(results.filter((r) => r.status === 429)).toHaveLength(3);
   });
 });

@@ -1,18 +1,23 @@
 {
-  "name": "burak",
+  "name": "kglow-backend",
   "version": "1.0.0",
-  "description": "This is burak project backend",
+  "private": true,
+  "description": "API and admin panel for K-Glow Secrets, an online shop for Korean skincare in Uzbekistan",
+  "homepage": "https://www.kglowshop.uz",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sanjardev23/kglow-backend.git"
+  },
+  "author": "Sanjar Kurbonaliyev",
+  "license": "UNLICENSED",
   "main": "src/server.ts",
   "scripts": {
     "start": "node dist/server.js",
     "start:dev": "nodemon --exec ts-node src/server.ts",
-    "train": "nodemon --exec ts-node src/train.ts",
     "build": "tsc && node -e \"for (const d of ['views','public']) require('fs').cpSync('src/'+d, 'dist/'+d, { recursive: true })\"",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
-  "author": "SIMON",
-  "license": "ISC",
   "dependencies": {
     "@anthropic-ai/sdk": "^1.6.0",
     "@sentry/node": "^11.10.0",
@@ -26,10 +31,9 @@
     "express": "^4.22.3",
     "express-rate-limit": "^8.7.1",
     "express-session": "^1.19.0",
-    "google-auth-library": "^9.15.1",
+    "google-auth-library": "^10.9.1",
     "helmet": "^8.3.0",
     "jsonwebtoken": "^9.0.3",
-    "moment": "^2.30.1",
     "mongoose": "^6.13.12",
     "morgan": "^1.10.0",
     "multer": "^2.5.0",

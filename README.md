@@ -2,7 +2,7 @@
 
 **API and admin panel for a live e-commerce business.** K-Glow Secrets sells original Korean skincare and makeup online and delivers across Uzbekistan. This repository is the server behind the shop: accounts, catalog, orders, the owner's admin panel, and an AI skincare advisor.
 
-**Live shop:** [www.kglowshop.uz](https://www.kglowshop.uz) · **Shop frontend:** [k-glow-react](https://github.com/sanjardev23/k-glow-react)
+**Live shop:** [www.kglowshop.uz](https://www.kglowshop.uz) · **Shop frontend:** [k-glow-react](https://github.com/sanjardevx/k-glow-react)
 
 ---
 
@@ -100,4 +100,4 @@ Source available for review only — **all rights reserved**. See [LICENSE](LICE
 ## Author
 
 **Sanjar Kurbonaliyev** — full-stack developer
-[sanjardevx@gmail.com](mailto:sanjardevx@gmail.com) · [GitHub](https://github.com/sanjardev23)
+[sanjardevx@gmail.com](mailto:sanjardevx@gmail.com) · [GitHub](https://github.com/sanjardevx)

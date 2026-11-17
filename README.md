@@ -1,8 +1,12 @@
 # K-Glow Secrets — Backend
 
+[![CI](https://github.com/sanjardevx/kglow-backend/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/sanjardevx/kglow-backend/actions/workflows/ci.yml)
+
 **API and admin panel for a live e-commerce business.** K-Glow Secrets sells original Korean skincare and makeup online and delivers across Uzbekistan. This repository is the server behind the shop: accounts, catalog, orders, the owner's admin panel, and an AI skincare advisor.
 
 **Live shop:** [www.kglowshop.uz](https://www.kglowshop.uz) · **Shop frontend:** [k-glow-react](https://github.com/sanjardevx/k-glow-react)
+
+> 🇰🇷 **한국어 요약** — 실제 운영 중인 K-뷰티 온라인 쇼핑몰의 API 서버와 관리자 페이지입니다. 회원·상품·주문 관리와 Claude 기반 AI 뷰티 상담을 제공하며, 구조화된 출력 검증과 프롬프트 캐싱으로 AI 답변 비용을 95% 이상 줄였습니다. Node.js · TypeScript · Express · MongoDB로 개발했고, 125개의 자동 테스트, 자동 배포, 암호화된 야간 백업으로 운영합니다.
 
 ---
 
@@ -31,7 +35,7 @@
 - **AI cost cut by more than 95%.** Moving to a smaller model, caching the catalog prompt and adding a per-customer daily quota brought the cost of an answer from about 13¢ to well under 1¢, with no visible drop in quality.
 - **Correct in three languages.** Answers come back in the shopper's language, with automatic checks that Uzbek text stays in Latin script and uses the right letters.
 - **Security by default.** Every input is validated, logins and AI use are rate-limited, passwords are hashed, payment receipts are never publicly reachable, and the server sends strict security headers.
-- **Hands-off operations.** Tests run on every push, a passing build deploys itself and is health-checked, and the database is backed up every night with a tested restore path.
+- **Hands-off operations.** Tests run on every push, a passing build deploys itself and is health-checked, and the database is backed up every night — encrypted before it leaves the server — with a tested restore path.
 - **Tested against a real database.** The suite spins up a throwaway MongoDB per test file, so tests exercise real queries and transactions, not mocks.
 
 ## Tech stack
@@ -92,6 +96,12 @@ npm run start:dev
 ```bash
 npm test                 # full test suite, no database setup needed
 ```
+
+## What I'd do next
+
+- **Card payments** (Click, Payme), with orders confirmed automatically by the payment provider.
+- **An evaluation set for AI Beauty**, run in CI, to track answer accuracy, cost per answer and response time.
+- **The catalog as an MCP server**, so AI assistants can search products and stock directly.
 
 ## License
 

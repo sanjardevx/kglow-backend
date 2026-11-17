@@ -2,6 +2,14 @@
 /**
  * Puts a backup made by backup-db.cjs back into a database.
  *
+ * Nightly backups from .github/workflows/backup.yml are encrypted with age.
+ * Download the artifact from the run page, then decrypt it with the private
+ * key (kept off GitHub) and unpack it:
+ *
+ *   age -d -i <private-key-file> kglow-<stamp>.tar.gz.age | tar -xzf -
+ *
+ * That gives the kglow-<stamp>/ folder to pass below.
+ *
  *   MONGO_URL=... node scripts/restore-db.cjs <backup-dir> [collection ...] --yes
  *
  * Each restored collection is first emptied, then filled from the backup, so

@@ -1,8 +1,13 @@
 name: Database backup
 
-# Every night a full copy of the shop's database is saved as a private
-# download on this workflow's run page, kept for 30 days. It only reads the
-# database. To restore one, see scripts/restore-db.cjs.
+# Every night a full copy of the shop's database is saved on this workflow's
+# run page, kept for 30 days. It only reads the database.
+#
+# This repo is public, and anyone signed in to GitHub can download a public
+# repo's workflow artifacts. So the backup is encrypted with age before it is
+# uploaded: the artifact holds only ciphertext, and only the private key kept
+# off GitHub can open it. The public key is the BACKUP_AGE_RECIPIENT repo
+# variable. To decrypt and restore one, see scripts/restore-db.cjs.
 on:
   schedule:
     - cron: "0 22 * * *" # 03:00 in Tashkent
@@ -18,26 +23,40 @@ concurrency:
 jobs:
   backup:
     runs-on: ubuntu-latest
+    env:
+      AGE_RECIPIENT: ${{ vars.BACKUP_AGE_RECIPIENT }}
     steps:
+      - name: Refuse to run without an encryption key
+        run: |
+          if [[ "$AGE_RECIPIENT" != age1* ]]; then
+            echo "::error::BACKUP_AGE_RECIPIENT is not set to an age public key. Not taking an unencrypted backup."
+            exit 1
+          fi
+
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
       - run: npm ci --omit=dev --ignore-scripts
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq age
 
-      - name: Copy the database
+      - name: Copy and encrypt the database
         env:
           MONGO_URL: ${{ secrets.MONGO_URL }}
         run: |
           STAMP=$(TZ=Asia/Tashkent date +%Y-%m-%d_%H%M)
           echo "STAMP=$STAMP" >> "$GITHUB_ENV"
           node scripts/backup-db.cjs "backup/kglow-$STAMP"
-          tar -czf "kglow-$STAMP.tar.gz" -C backup "kglow-$STAMP"
+          tar -czf - -C backup "kglow-$STAMP" | age -r "$AGE_RECIPIENT" -o "kglow-$STAMP.tar.gz.age"
+          rm -rf backup
+          # Fail loudly if anything other than ciphertext would be uploaded.
+          head -c 21 "kglow-$STAMP.tar.gz.age" | grep -q "age-encryption.org/v1"
 
       - uses: actions/upload-artifact@v4
         with:
           name: kglow-db-${{ env.STAMP }}
-          path: kglow-${{ env.STAMP }}.tar.gz
+          path: kglow-${{ env.STAMP }}.tar.gz.age
           retention-days: 30
           if-no-files-found: error
+          compression-level: 0 # already compressed and encrypted

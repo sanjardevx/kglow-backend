@@ -31,8 +31,9 @@
 
 ## Engineering highlights
 
+- **AI that looks things up.** The chat advisor uses Claude tool calling: it searches the shop and reads a product's details from the live database before recommending it, in a bounded loop where bad calls come back as errors the model can correct.
 - **AI that can't invent products.** Claude returns structured JSON that is validated against a schema, and every product it suggests is checked against live inventory before a shopper sees it.
-- **AI cost cut by more than 95%.** Moving to a smaller model, caching the catalog prompt and adding a per-customer daily quota brought the cost of an answer from about 13¢ to well under 1¢, with no visible drop in quality.
+- **AI cost cut by more than 95%.** Moving to a smaller model, caching the catalog prompt, reusing finished routines for repeated quiz answers and adding a per-customer daily quota brought the cost of an answer from about 13¢ to well under 1¢, with no visible drop in quality.
 - **Correct in three languages.** Answers come back in the shopper's language, with automatic checks that Uzbek text stays in Latin script and uses the right letters.
 - **Security by default.** Every input is validated, logins and AI use are rate-limited, passwords are hashed, payment receipts are never publicly reachable, and the server sends strict security headers.
 - **Hands-off operations.** Tests run on every push, a passing build deploys itself and is health-checked, and the database is backed up every night — encrypted before it leaves the server — with a tested restore path.
@@ -47,7 +48,7 @@
 | Database | MongoDB with Mongoose |
 | Authentication | JWT, server sessions, Google Sign-In |
 | Validation | Zod |
-| AI | Anthropic Claude (structured output, prompt caching) |
+| AI | Anthropic Claude (tool calling, structured output, prompt caching) |
 | Testing | Vitest, Supertest, mongodb-memory-server |
 | Infrastructure | AWS, nginx, HTTPS (Let's Encrypt) |
 | CI/CD | GitHub Actions |

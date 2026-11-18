@@ -94,5 +94,11 @@ router.post(
   memberController.verifyAuth,
   beautyController.chat,
 );
+router.post(
+  "/ai/chat/stream",
+  aiLimiter,
+  memberController.verifyAuth,
+  beautyController.chatStream,
+);
 
 export default router;
